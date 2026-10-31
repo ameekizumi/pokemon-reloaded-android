@@ -412,6 +412,8 @@ impl Game {
             param_string = param_string.trim_start_matches("\\\\?\\");
             program_directory = program_directory.trim_start_matches("\\\\?\\");
         }
+        // Load mods first: the script overrides must exist before the scripts below are compiled.
+        crate::mods::prepare(program_directory);
         // TODO: store these as gml::String probably?
         eprintln!(
             "launching game\n  > param_string: \"{}\"\n  > program_directory: \"{}\"",
@@ -3636,7 +3638,6 @@ impl Game {
     // Plays the game normally
     pub fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         let game_directory = self.decode_str(self.program_directory.as_ref()).into_owned();
-        crate::mods::prepare(&game_directory);
         self.apply_visual_settings(std::path::Path::new(&game_directory));
         self.init()?;
         handle_scene_change!(self);
