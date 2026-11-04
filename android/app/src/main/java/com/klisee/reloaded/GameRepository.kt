@@ -155,8 +155,48 @@ class GameRepository(private val context: Context) {
         return data.isDirectory && data.listFiles()?.isNotEmpty() == true
     }
 
-    private fun findExe(dir: File): File? =
-        dir.listFiles()?.firstOrNull { it.isFile && it.extension.equals("exe", ignoreCase = true) }
+    /**
+     * The game executable. When the PC "Reloaded Online" executables were dropped in next to the
+     * original one there are several `.exe` files, and `listFiles()` has no defined order. The
+     * original is preferred: the Online `.exe` relies on `ROZ.dll`, which cannot run on Android,
+     * and the app already has its own online layer. An Online `.exe` is still used if it is all
+     * there is.
+     */
+    private fun findExe(dir: File): File? {
+        val exes = dir.listFiles().orEmpty()
+            .filter { it.isFile && it.extension.equals("exe", ignoreCase = true) }
+            .sortedBy { it.name.lowercase() }
+        return exes.firstOrNull { !it.name.contains("online", ignoreCase = true) } ?: exes.firstOrNull()
+    }
+
+    /**
+     * True for the PC "Reloaded Online" add-on zip: two `.exe`, `ROZ.dll` and a single
+     * `data/text/mundo.txt` (the server address). It passes the "exe + data/" check, so installing
+     * it like a game would replace the whole install with those few files.
+     */
+    private fun isOnlineAddon(plan: ZipPlan): Boolean {
+        val files = plan.items.filter { !it.directory }
+        val dataFiles = files.filter { it.path.startsWith("data/", ignoreCase = true) }
+        return dataFiles.isNotEmpty() &&
+            dataFiles.all { it.path.equals("data/text/mundo.txt", ignoreCase = true) } &&
+            files.any { it.path.equals("ROZ.dll", ignoreCase = true) || it.path.contains("online", ignoreCase = true) }
+    }
+
+    /** Keeps the installed game and takes only the server address from the Online add-on. */
+    private fun installOnlineAddon(zip: File, plan: ZipPlan, log: (String) -> Unit) {
+        if (!looksLikeGame(gameDir)) {
+            error("Este zip es el complemento Reloaded Online. Instala primero el juego base y luego impórtalo.")
+        }
+        val item = plan.items.first { it.path.equals("data/text/mundo.txt", ignoreCase = true) }
+        val target = File(gameDir, "data/text/mundo.txt")
+        target.parentFile?.mkdirs()
+        ZipFile(zip).use { z ->
+            val entry = z.getEntry(item.raw) ?: error("No encuentro mundo.txt dentro del zip.")
+            if (entry.size > 1024) error("mundo.txt es demasiado grande para ser una dirección de servidor.")
+            z.getInputStream(entry).use { input -> target.outputStream().use { input.copyTo(it) } }
+        }
+        log("Complemento Reloaded Online: servidor guardado en data/text/mundo.txt. Los .exe y ROZ.dll de PC no se usan en Android.")
+    }
 
     /**
      * What a "save" actually is: the saved games plus the teams and custom characters the game's own
@@ -380,9 +420,29 @@ class GameRepository(private val context: Context) {
         }
     }
 
+    /**
+     * Puts the Reloaded Online server address straight into the game files
+     * (`data/text/mundo.txt`), the same place the PC add-on uses. It is written only when the
+     * game is installed and the file is missing, so an address the user or an Online add-on zip
+     * already put there is never overwritten.
+     */
+    private fun installBundledOnline() {
+        val data = File(gameDir, "data")
+        if (!data.isDirectory) return
+        val target = File(data, "text/mundo.txt")
+        if (target.isFile) return
+        runCatching {
+            target.parentFile?.mkdirs()
+            context.assets.open("online/mundo.txt").use { input ->
+                target.outputStream().use { output -> input.copyTo(output) }
+            }
+        }
+    }
+
     suspend fun prepare(): Unit = withContext(Dispatchers.IO) {
         recoverInterruptedInstall()
         installBundledMods()
+        installBundledOnline()
         val exe = findExe(gameDir)
         if (exe != null && File(gameDir, "data").isDirectory) {
             // Installs made before the launcher recorded these still need their size and date.
@@ -590,6 +650,10 @@ class GameRepository(private val context: Context) {
         foldZipNamesToAscii(zip)
         val plan = planZip(zip, log)
         log("Zip válido: ${plan.items.count { !it.directory }} archivos, ${formatBytes(plan.totalBytes)} sin comprimir.")
+        if (isOnlineAddon(plan)) {
+            installOnlineAddon(zip, plan, log)
+            return
+        }
 
         // A previous failed attempt can leave a lot in staging, so clear it before measuring the
         // free space it would otherwise hide.
