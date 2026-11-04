@@ -49,7 +49,7 @@ object Strings {
         for ((re, en) in patterns) {
             val m = re.matchEntire(text) ?: continue
             var i = 0
-            out = en.replace("{}") { m.groupValues[++i] }
+            out = Regex("\\{\\}").replace(en) { m.groupValues[++i] }
             break
         }
         if (out == text) {
