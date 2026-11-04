@@ -220,7 +220,7 @@ fun ModsScreen(filesDir: File, onBack: () -> Unit) {
                     Text(it, color = MaterialTheme.colorScheme.error)
                 }
                 Text(
-                    "Activa o desactiva los mods. Los cambios se aplican al reiniciar el juego.",
+                    "Activa o desactiva los mods aquí o desde el botón Mods del título del juego. Los mods con scripts GML se aplican al reiniciar.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
