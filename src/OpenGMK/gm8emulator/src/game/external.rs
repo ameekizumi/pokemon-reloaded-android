@@ -1,5 +1,6 @@
 pub mod dll;
 mod dummy;
+pub mod roz;
 pub mod win32;
 mod wow64;
 
@@ -24,6 +25,7 @@ pub enum Call {
     Emulated(Function),
     Native(NativeExternal),
     Ipc(ipc::IpcExternal),
+    Roz(roz::RozFn),
 }
 
 pub struct External {
@@ -34,6 +36,7 @@ pub struct External {
 pub struct ExternalManager {
     externals: Vec<Option<External>>,
     dummy_audio: bool,
+    roz: roz::Roz,
 
     native_manager: native::NativeManager,
     ipc_manager: ipc::IpcManager,
@@ -49,6 +52,7 @@ impl ExternalManager {
         Self {
             externals: Vec::new(),
             dummy_audio,
+            roz: roz::Roz::new(),
             native_manager: native::NativeManager::new(),
             ipc_manager: ipc::IpcManager::new(),
         }
@@ -58,10 +62,28 @@ impl ExternalManager {
         if let Some(dummy) = self.should_dummy(&signature) {
             return Ok(Call::Dummy(dummy))
         }
+        // ROZ.dll (Reloaded Online) is emulated natively on every platform.
+        let file = Path::new(&signature.dll).file_name().and_then(|o| o.to_str()).unwrap_or(&signature.dll);
+        if file.eq_ignore_ascii_case("roz.dll") {
+            // An export the shim doesn't know returns 0 instead of aborting the game.
+            return Ok(match roz::RozFn::from_symbol(&signature.symbol) {
+                Some(f) => Call::Roz(f),
+                None => Call::Dummy(gml::Value::Real(0.into())),
+            })
+        }
         if cfg!(all(target_os = "windows", target_arch = "x86")) {
             Ok(Call::Native(self.native_manager.define(&signature)?))
         } else {
-            Ok(Call::Ipc(self.ipc_manager.define(&signature)?))
+            match self.ipc_manager.define(&signature) {
+                Ok(ipc) => Ok(Call::Ipc(ipc)),
+                // Android cannot load Windows DLLs: a failed define used to end the game at
+                // launch. Answer 0 to every call instead, as the audio dummies already do.
+                Err(e) if cfg!(target_os = "android") => {
+                    eprintln!("[external] {}::{} unavailable here ({e}); returning 0", signature.dll, signature.symbol);
+                    Ok(Call::Dummy(gml::Value::Real(0.into())))
+                },
+                Err(e) => Err(e),
+            }
         }
     }
 
@@ -84,6 +106,13 @@ impl ExternalManager {
     pub fn call_native(&mut self, id: usize, args: &[dll::Value]) -> gml::Value {
         match &self.externals[id].as_ref().unwrap().call {
             Call::Native(ext) => self.native_manager.call(ext, args).into(),
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn call_roz(&mut self, id: usize, args: &[dll::Value]) -> gml::Value {
+        match &self.externals[id].as_ref().unwrap().call {
+            &Call::Roz(f) => self.roz.call(f, args).into(),
             _ => unreachable!(),
         }
     }
@@ -157,14 +186,6 @@ impl ExternalManager {
             // ^ floogle's original comment, whatever it may mean
             // ^ viri's original comment, made without consulting floogle
             dummy = Some(gml::Value::Real(0.into()));
-        }
-
-        // ROZ.dll is the Windows socket helper of the PC "Reloaded Online" executable
-        // (net_connect, net_send, net_recv...). It cannot be loaded here; the app's own online
-        // layer replaces it. Answering with an empty result keeps that executable running
-        // offline instead of aborting on the first call. On 32-bit Windows the real DLL still loads.
-        if !cfg!(all(target_os = "windows", target_arch = "x86")) && dll.eq_ignore_ascii_case("roz.dll") {
-            dummy = Some(if sym == "net_recv" { gml::Value::Str("".into()) } else { gml::Value::Real(0.into()) });
         }
 
         dummy

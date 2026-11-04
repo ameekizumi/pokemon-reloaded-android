@@ -392,7 +392,7 @@ impl Game {
             self.draw_string(
                 Real::from(center),
                 Real::from(f64::from(y2) - 16.0),
-                gml::String::from("Z / Enter para cerrar"),
+                gml::String::from(crate::i18n::tr("Z / Enter para cerrar", "Z / Enter to close")),
                 None,
                 None,
                 Real::from(1.0),
@@ -415,20 +415,20 @@ impl Game {
     }
 
     fn draw_interaction_menu(&mut self) {
-        let title = format!("Jugador: {}", self.interaction_target_name);
-        self.draw_interaction_panel(&title, "", &["Combatir", "Intercambiar", "Regalar", "Cancelar"], Some(self.interaction_menu_selection), 0);
+        let title = format!("{}: {}", crate::i18n::tr("Jugador", "Player"), self.interaction_target_name);
+        self.draw_interaction_panel(&title, "", &[crate::i18n::tr("Combatir", "Battle"), crate::i18n::tr("Intercambiar", "Trade"), crate::i18n::tr("Regalar", "Gift"), crate::i18n::tr("Cancelar", "Cancel")], Some(self.interaction_menu_selection), 0);
     }
 
     fn draw_interaction_request(&mut self) {
         let Some((_, name, kind, _)) = self.interaction_request.as_ref() else { return };
         let action = match kind.as_str() {
-            "F" => "combatir",
-            "T" => "intercambiar Pokemon",
-            _ => "regalarte un Pokemon",
+            "F" => crate::i18n::tr("combatir", "battle"),
+            "T" => crate::i18n::tr("intercambiar Pokemon", "trade Pokémon"),
+            _ => crate::i18n::tr("regalarte un Pokemon", "gift you a Pokémon"),
         };
-        let body = format!("{name} quiere {action}.#Aceptas?");
-        let title = "Solicitud online";
-        self.draw_interaction_panel(&title, &body, &["Si", "No"], Some(self.interaction_menu_selection), 2);
+        let body = format!("{name} {} {action}.#{}", crate::i18n::tr("quiere", "wants to"), crate::i18n::tr("Aceptas?", "Do you accept?"));
+        let title = crate::i18n::tr("Solicitud online", "Online request");
+        self.draw_interaction_panel(&title, &body, &[crate::i18n::tr("Si", "Yes"), "No"], Some(self.interaction_menu_selection), 2);
     }
 
     fn draw_interaction_response(&mut self) {
@@ -521,7 +521,7 @@ impl Game {
         self.draw_colour = Colour::new(1.0, 1.0, 1.0);
         let pages = self.mods_menu_pages();
         let page = self.mods_menu_page.min(pages - 1);
-        let title = if pages > 1 { format!("Mods  {}/{}  >", page + 1, pages) } else { "Mods".to_string() };
+        let title = if pages > 1 { format!("Mods {}/{}", page + 1, pages) } else { String::from("Mods") };
         self.draw_string(
             Real::from(center),
             Real::from(f64::from(y1) + 5.0),
@@ -573,7 +573,7 @@ impl Game {
             self.draw_string(
                 Real::from(center),
                 Real::from(f64::from(y1) + 40.0),
-                gml::String::from("Sin mods instalados"),
+                gml::String::from(crate::i18n::tr("Sin mods instalados", "No mods installed")),
                 None,
                 None,
                 Real::from(1.0),
@@ -582,6 +582,41 @@ impl Game {
                 None,
                 Real::from(1.0),
             );
+        }
+        // Last thing the player touched (description, or "reinicia el juego" for script mods).
+        if !self.mods_menu_note.is_empty() {
+            self.draw_colour = Colour::new(0.75, 0.75, 0.75);
+            let note = self.mods_menu_note.clone();
+            self.draw_string(
+                Real::from(center),
+                Real::from(f64::from(y2) - 44.0),
+                gml::String::from(note.as_str()),
+                None,
+                None,
+                Real::from(1.0),
+                Real::from(1.0),
+                Real::from(0.0),
+                None,
+                Real::from(1.0),
+            );
+        }
+        if pages > 1 {
+            self.draw_colour = Colour::new(1.0, 1.0, 1.0);
+            for (rect, label) in [(self.mods_menu_prev_rect(), "<"), (self.mods_menu_next_rect(), ">")] {
+                let (px1, py1, px2, _) = rect;
+                self.draw_string(
+                    Real::from(f64::from(px1 + px2) * 0.5),
+                    Real::from(f64::from(py1) + 2.0),
+                    gml::String::from(label),
+                    None,
+                    None,
+                    Real::from(1.0),
+                    Real::from(1.0),
+                    Real::from(0.0),
+                    None,
+                    Real::from(1.0),
+                );
+            }
         }
         let (cx1, cy1, cx2, cy2) = self.mods_menu_close_rect();
         let close_hovered = mouse_x >= cx1 && mouse_x <= cx2 && mouse_y >= cy1 && mouse_y <= cy2;
@@ -605,7 +640,7 @@ impl Game {
         self.draw_string(
             Real::from(center),
             Real::from(f64::from(cy1) + 2.0),
-            gml::String::from("Volver"),
+            gml::String::from(crate::i18n::tr("Volver", "Back")),
             None,
             None,
             Real::from(1.0),
@@ -662,7 +697,7 @@ impl Game {
         self.draw_string(
             Real::from(center),
             Real::from(f64::from(y1) + 5.0),
-            gml::String::from("A que modo quieres jugar?"),
+            gml::String::from(crate::i18n::tr("A que modo quieres jugar?", "Which mode do you want to play?")),
             None,
             None,
             Real::from(1.0),
@@ -672,7 +707,7 @@ impl Game {
             Real::from(1.0),
         );
 
-        let options = ["Local", "Mundo online (servidor local)", "Cancelar"];
+        let options = ["Local", crate::i18n::tr("Mundo online (servidor local)", "Online world (local server)"), crate::i18n::tr("Cancelar", "Cancel")];
         for (index, label) in options.iter().enumerate() {
             let (rx1, ry1, rx2, ry2) = self.online_menu_row(index);
             let selected = index == self.online_menu_selection;
