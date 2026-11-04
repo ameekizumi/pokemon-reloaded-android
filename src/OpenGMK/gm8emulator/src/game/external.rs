@@ -37,6 +37,7 @@ pub struct ExternalManager {
     externals: Vec<Option<External>>,
     dummy_audio: bool,
     roz: roz::Roz,
+    roz_used: bool,
 
     native_manager: native::NativeManager,
     ipc_manager: ipc::IpcManager,
@@ -53,9 +54,16 @@ impl ExternalManager {
             externals: Vec::new(),
             dummy_audio,
             roz: roz::Roz::new(),
+            roz_used: false,
             native_manager: native::NativeManager::new(),
             ipc_manager: ipc::IpcManager::new(),
         }
+    }
+
+    /// True once the loaded game imports ROZ.dll, i.e. it is the developer's Online build, whose
+    /// own Multijugador menu (with the internet option) must not be replaced by the overlay.
+    pub fn roz_used(&self) -> bool {
+        self.roz_used
     }
 
     fn make_call(&mut self, signature: &dll::ExternalSignature) -> Result<Call, String> {
@@ -65,6 +73,7 @@ impl ExternalManager {
         // ROZ.dll (Reloaded Online) is emulated natively on every platform.
         let file = Path::new(&signature.dll).file_name().and_then(|o| o.to_str()).unwrap_or(&signature.dll);
         if file.eq_ignore_ascii_case("roz.dll") {
+            self.roz_used = true;
             // An export the shim doesn't know returns 0 instead of aborting the game.
             return Ok(match roz::RozFn::from_symbol(&signature.symbol) {
                 Some(f) => Call::Roz(f),
