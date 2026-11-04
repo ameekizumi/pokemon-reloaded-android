@@ -1,4 +1,4 @@
-package com.klisee.reloaded.discord
+package io.reloadedfork.app.discord
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -9,8 +9,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import com.klisee.reloaded.MainActivity
-import com.klisee.reloaded.R
+import io.reloadedfork.app.MainActivity
+import io.reloadedfork.app.R
 
 /**
  * Mantiene viva la conexión con Discord mientras el juego corre y muestra la notificación fija.

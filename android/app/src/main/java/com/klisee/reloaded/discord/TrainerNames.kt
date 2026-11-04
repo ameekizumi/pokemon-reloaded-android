@@ -1,4 +1,4 @@
-package com.klisee.reloaded.discord
+package io.reloadedfork.app.discord
 
 /**
  * The trainer classes the game combines with a name ("Estudiante" + "Rubén"). They are shortened

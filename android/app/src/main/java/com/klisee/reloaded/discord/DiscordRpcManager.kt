@@ -1,10 +1,10 @@
-package com.klisee.reloaded.discord
+package io.reloadedfork.app.discord
 
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
-import com.klisee.reloaded.Preferences
+import io.reloadedfork.app.Preferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

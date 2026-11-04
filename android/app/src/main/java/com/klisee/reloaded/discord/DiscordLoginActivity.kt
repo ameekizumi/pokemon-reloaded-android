@@ -1,4 +1,4 @@
-package com.klisee.reloaded.discord
+package io.reloadedfork.app.discord
 
 import android.annotation.SuppressLint
 import android.app.Activity

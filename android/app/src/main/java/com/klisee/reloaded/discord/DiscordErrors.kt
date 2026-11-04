@@ -1,4 +1,4 @@
-package com.klisee.reloaded.discord
+package io.reloadedfork.app.discord
 
 /** Errores del inicio de sesión de Discord, separados para poder avisar de cada uno. */
 sealed class DiscordAuthException(message: String, cause: Throwable? = null) : Exception(message, cause) {

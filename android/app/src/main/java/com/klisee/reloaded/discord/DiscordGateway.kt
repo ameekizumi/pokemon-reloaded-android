@@ -1,4 +1,4 @@
-package com.klisee.reloaded.discord
+package io.reloadedfork.app.discord
 
 import android.util.Log
 import okhttp3.OkHttpClient

@@ -1,4 +1,4 @@
-package com.klisee.reloaded.discord
+package io.reloadedfork.app.discord
 
 /**
  * Todo lo que la integración con Discord necesita, apuntando a la aplicación propia del proyecto.
@@ -10,7 +10,8 @@ package com.klisee.reloaded.discord
 object DiscordConfig {
 
     /** Sin esto la función queda desactivada y Ajustes avisa de que falta configurarla. */
-    const val APPLICATION_ID = "1561228465129128027"
+    // Create your own application at https://discord.com/developers and put its ID here.
+    const val APPLICATION_ID = ""
 
     /** Claves subidas en el portal: Rich Presence -> Art Assets. */
     // Reused until the engine reports a character with its own asset.
@@ -28,7 +29,7 @@ object DiscordConfig {
 
     /** The Discord application icon (CDN, hosted by Discord). This is what the presence shows. */
     const val APP_ICON_URL =
-        "https://cdn.discordapp.com/app-icons/1561228465129128027/6ed2b13c6d164b5ad3da52172b630a62.png?size=256"
+        ""
 
     /** Línea 2 y línea 3 cuando todavía no se conoce la sala. */
     const val FALLBACK_DETAILS = "En el Lanzador"

@@ -1,4 +1,4 @@
-package com.klisee.reloaded.discord
+package io.reloadedfork.app.discord
 
 import org.json.JSONArray
 import org.json.JSONObject
