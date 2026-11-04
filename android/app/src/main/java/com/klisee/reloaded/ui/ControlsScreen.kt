@@ -1,4 +1,4 @@
-package com.klisee.reloaded.ui
+package io.reloadedfork.app.ui
 
 import android.content.Context
 import android.hardware.input.InputManager
@@ -35,12 +35,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.klisee.reloaded.ControlAction
-import com.klisee.reloaded.Preferences
-import com.klisee.reloaded.buttonName
-import com.klisee.reloaded.connectedPads
-import com.klisee.reloaded.hint
-import com.klisee.reloaded.writeControlsFile
+import io.reloadedfork.app.ControlAction
+import io.reloadedfork.app.Preferences
+import io.reloadedfork.app.buttonName
+import io.reloadedfork.app.connectedPads
+import io.reloadedfork.app.hint
+import io.reloadedfork.app.writeControlsFile
 import java.io.File
 
 /** The action a button is currently bound to, for showing what a press will do. */

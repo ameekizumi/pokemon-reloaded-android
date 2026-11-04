@@ -1,4 +1,4 @@
-package com.klisee.reloaded.ui
+package io.reloadedfork.app.ui
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -27,9 +27,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.klisee.reloaded.Blog
-import com.klisee.reloaded.GameRepository
-import com.klisee.reloaded.Preferences
+import io.reloadedfork.app.Blog
+import io.reloadedfork.app.GameRepository
+import io.reloadedfork.app.Preferences
 import kotlinx.coroutines.launch
 
 /**
@@ -88,7 +88,7 @@ fun Onboarding(
             title = "Pokemon Reloaded en Android",
             subtitle = buildAnnotatedString {
                 append(
-                    Strings.tr("Un port hecho por la comunidad y para la comunidad, por @kliseex. Corre sobre " +
+                    Strings.tr("Un port hecho por la comunidad y para la comunidad, por @lionelmendozaparsons020-lab. Corre sobre " +
                         "OpenGMK, una reimplementación nativa del motor de Game Maker 8, así que el " +
                         "juego se ejecuta de verdad: no hay ningún Windows emulado por medio y el " +
                         "rendimiento es prácticamente el de un juego nativo.\n\n" +
@@ -96,7 +96,7 @@ fun Onboarding(
                         "algún bug, mínimo o grave, por favor guarda un log y repórtalo.\n\n" +
                         "Manda reportes de bugs, crasheos o congelamientos a "),
                 )
-                withLink(LinkAnnotation.Url("https://github.com/Klisee/pokemon-reloaded-android")) {
+                withLink(LinkAnnotation.Url("https://github.com/lionelmendozaparsons020-lab/pokemon-reloaded-android")) {
                     append("GitHub")
                 }
                 append(".")

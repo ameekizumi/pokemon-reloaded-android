@@ -1,4 +1,4 @@
-package com.klisee.reloaded.ui
+package io.reloadedfork.app.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

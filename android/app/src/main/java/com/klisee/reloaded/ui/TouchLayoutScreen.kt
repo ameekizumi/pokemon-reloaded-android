@@ -1,4 +1,4 @@
-package com.klisee.reloaded.ui
+package io.reloadedfork.app.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -44,11 +44,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.klisee.reloaded.Placement
-import com.klisee.reloaded.Preferences
-import com.klisee.reloaded.TOUCH_CONTROLS
-import com.klisee.reloaded.TouchOverlayStyle
-import com.klisee.reloaded.defaultPlacement
+import io.reloadedfork.app.Placement
+import io.reloadedfork.app.Preferences
+import io.reloadedfork.app.TOUCH_CONTROLS
+import io.reloadedfork.app.TouchOverlayStyle
+import io.reloadedfork.app.defaultPlacement
 import kotlin.math.roundToInt
 
 /**

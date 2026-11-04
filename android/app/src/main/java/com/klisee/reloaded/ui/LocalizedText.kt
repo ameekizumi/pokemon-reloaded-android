@@ -1,4 +1,4 @@
-package com.klisee.reloaded.ui
+package io.reloadedfork.app.ui
 
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.material3.LocalTextStyle

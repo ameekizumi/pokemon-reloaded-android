@@ -1,4 +1,4 @@
-package com.klisee.reloaded.ui
+package io.reloadedfork.app.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -23,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -34,23 +35,27 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.klisee.reloaded.Emulator
-import com.klisee.reloaded.GameRepository
-import com.klisee.reloaded.Preferences
-import com.klisee.reloaded.Update
-import com.klisee.reloaded.discord.DiscordRpcManager
-import com.klisee.reloaded.installUpdate
+import io.reloadedfork.app.Emulator
+import io.reloadedfork.app.GameRepository
+import io.reloadedfork.app.Preferences
+import io.reloadedfork.app.Update
+import io.reloadedfork.app.discord.DiscordRpcManager
+import io.reloadedfork.app.installUpdate
 import kotlinx.coroutines.launch
 
 /** Screens reached from a tab rather than being tabs themselves. */
-private enum class Pushed { About, Controls, Discord, TouchSettings, Fps, TouchLayout, MySaves, Mods, ReloadedOnline }
+private enum class Pushed { About, Controls, Discord, TouchSettings, Fps, TouchLayout, MySaves, Mods, Cheats, ReloadedOnline, Theme }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun App(repo: GameRepository, prefs: Preferences) {
+fun App(
+    repo: GameRepository,
+    prefs: Preferences,
+    checkForUpdates: suspend (String) -> Result<Update.Release?> = Update::check,
+) {
     var onboarded by remember { mutableStateOf(prefs.onboardingDone) }
-    var tab by remember { mutableStateOf(Tab.Home) }
-    var pushed by remember { mutableStateOf<Pushed?>(null) }
+    var tab by rememberSaveable { mutableStateOf(Tab.Home) }
+    var pushed by rememberSaveable { mutableStateOf<Pushed?>(null) }
     // Bumped whenever a tab comes into view, so the pages re-read the game's state. Without it,
     // deleting the game in Ajustes left "Jugar" enabled back in Inicio.
     var revision by remember { mutableStateOf(0) }
@@ -110,7 +115,7 @@ fun App(repo: GameRepository, prefs: Preferences) {
             context.packageManager.getPackageInfo(context.packageName, 0).versionName
         }.getOrNull().orEmpty()
         if (installed.isNotEmpty()) {
-            Update.check(installed).getOrNull()?.let { update = it }
+            checkForUpdates(installed).getOrNull()?.let { update = it }
         }
     }
 
@@ -155,7 +160,7 @@ fun App(repo: GameRepository, prefs: Preferences) {
                 problem = null
             },
             onOpenReleases = {
-                openInBrowser(context, Update.RELEASES_PAGE)
+                openInBrowser(context, release.pageUrl)
                 update = null
             },
         )
@@ -170,6 +175,7 @@ fun App(repo: GameRepository, prefs: Preferences) {
         pushed == Pushed.TouchSettings || pushed == Pushed.TouchLayout ->
             if (english) "Customizing the Controls" else "Personalizando los Controles"
         pushed == Pushed.MySaves -> if (english) "Viewing the Saves" else "Viendo las Partidas"
+        pushed == Pushed.Mods || pushed == Pushed.Cheats -> if (english) "Viewing Mods and Cheats" else "Viendo Mods y Cheats"
         tab == Tab.Log -> if (english) "In Logs" else "En los Logs"
         tab == Tab.Settings -> if (english) "In Settings" else "En los Ajustes"
         else -> if (english) "Ready to start" else "Listo para iniciar"
@@ -187,9 +193,13 @@ fun App(repo: GameRepository, prefs: Preferences) {
         return
     }
 
-    BackHandler(enabled = pushed != null) { pushed = null }
+    BackHandler(enabled = pushed != null || tab != Tab.Home) {
+        if (pushed != null) pushed = null
+        else scope.launch { pagerState.animateScrollToPage(Tab.Home.ordinal) }
+    }
 
     when (pushed) {
+        Pushed.Theme -> ThemeScreen(prefs = prefs, onBack = { pushed = null })
         Pushed.About -> AboutScreen(onBack = { pushed = null })
         Pushed.Controls -> ControlsScreen(
             prefs = prefs,
@@ -202,6 +212,7 @@ fun App(repo: GameRepository, prefs: Preferences) {
         Pushed.TouchLayout -> TouchLayoutScreen(prefs = prefs, onBack = { pushed = null })
         Pushed.MySaves -> MySavesScreen(repo = repo, onBack = { pushed = null })
         Pushed.Mods -> ModsScreen(filesDir = context.filesDir, onBack = { pushed = null })
+        Pushed.Cheats -> ModsCheatsScreen(repo = repo, onBack = { pushed = null })
         Pushed.ReloadedOnline -> ReloadedOnlineScreen(
             repo = repo,
             onBack = { pushed = null },
@@ -235,6 +246,8 @@ fun App(repo: GameRepository, prefs: Preferences) {
                         repo,
                         prefs,
                         revision = revision,
+                        onClose = { scope.launch { pagerState.animateScrollToPage(Tab.Home.ordinal) } },
+                        onTheme = { pushed = Pushed.Theme },
                         onLog = { scope.launch { pagerState.animateScrollToPage(Tab.Log.ordinal) } },
                         onAbout = { pushed = Pushed.About },
                         onControls = { pushed = Pushed.Controls },
@@ -243,13 +256,14 @@ fun App(repo: GameRepository, prefs: Preferences) {
                         onFpsSettings = { pushed = Pushed.Fps },
                         onMySaves = { pushed = Pushed.MySaves },
                         onMods = { pushed = Pushed.Mods },
+                        onCheats = { pushed = Pushed.Cheats },
                         onUpdateFound = { update = it },
                     )
                 }
             }
             // The bar floats over the pages instead of taking a strip of its own, so nothing is
             // cut off at the bottom and there is no band of a different colour behind it.
-            ReloadedBottomNav(
+            if (tab != Tab.Settings) ReloadedBottomNav(
                 current = tab,
                 onSelect = { target ->
                     // A tap animates across instead of jumping, so it reads the same as a swipe.

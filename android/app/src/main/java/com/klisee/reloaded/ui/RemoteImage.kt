@@ -1,4 +1,4 @@
-package com.klisee.reloaded.ui
+package io.reloadedfork.app.ui
 
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image

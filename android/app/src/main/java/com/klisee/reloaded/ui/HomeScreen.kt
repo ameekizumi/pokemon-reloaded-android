@@ -1,4 +1,4 @@
-package com.klisee.reloaded.ui
+package io.reloadedfork.app.ui
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -60,9 +60,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.klisee.reloaded.Blog
-import com.klisee.reloaded.Emulator
-import com.klisee.reloaded.GameRepository
+import io.reloadedfork.app.Blog
+import io.reloadedfork.app.Emulator
+import io.reloadedfork.app.GameRepository
 import kotlinx.coroutines.launch
 
 /**

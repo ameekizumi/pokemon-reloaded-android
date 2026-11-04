@@ -1,4 +1,4 @@
-package com.klisee.reloaded.ui
+package io.reloadedfork.app.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,9 +29,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.klisee.reloaded.MoveMode
-import com.klisee.reloaded.Preferences
-import com.klisee.reloaded.TouchStyle
+import io.reloadedfork.app.MoveMode
+import io.reloadedfork.app.Preferences
+import io.reloadedfork.app.TouchStyle
 import kotlin.math.roundToInt
 
 /**
@@ -93,7 +93,8 @@ fun TouchSettingsScreen(prefs: Preferences, onBack: () -> Unit) {
                         icon = Icons.Filled.VideogameAsset,
                         title = option.title,
                         subtitle = when (option) {
-                            TouchStyle.MODERN -> "Sprites semitransparentes y la distribucion por perfiles"
+                            TouchStyle.MODERN -> "Sprites originales semitransparentes y perfiles"
+                            TouchStyle.MODERN_V2 -> "Sprites nuevos: botón 8 azul y controles personalizados"
                             TouchStyle.CLASSIC -> "Botones suaves con anillos y etiquetas limpias"
                         },
                         selected = appearance.style == option,
@@ -102,7 +103,7 @@ fun TouchSettingsScreen(prefs: Preferences, onBack: () -> Unit) {
                         onSelect = {
                             appearance = appearance.copy(style = option)
                             prefs.touchAppearance = appearance
-                            if (option == TouchStyle.MODERN) {
+                            if (option != TouchStyle.CLASSIC) {
                                 move = MoveMode.Joystick
                                 prefs.moveMode = MoveMode.Joystick
                             } else {
@@ -149,7 +150,7 @@ fun TouchSettingsScreen(prefs: Preferences, onBack: () -> Unit) {
                     subtitle = "Arrastra y redimensiona por perfil (Exploracion, Combate...)",
                     items = 3,
                     index = 0,
-                    onClick = { context.startActivity(android.content.Intent(context, com.klisee.reloaded.TouchEditorActivity::class.java)) },
+                    onClick = { context.startActivity(android.content.Intent(context, io.reloadedfork.app.TouchEditorActivity::class.java)) },
                 )
                 NavRow(
                     icon = Icons.Filled.VideogameAsset,
@@ -157,7 +158,7 @@ fun TouchSettingsScreen(prefs: Preferences, onBack: () -> Unit) {
                     subtitle = "Cambia la imagen de un boton o importa un pack",
                     items = 3,
                     index = 1,
-                    onClick = { context.startActivity(android.content.Intent(context, com.klisee.reloaded.TouchAssetsActivity::class.java)) },
+                    onClick = { context.startActivity(android.content.Intent(context, io.reloadedfork.app.TouchAssetsActivity::class.java)) },
                 )
                 NavRow(
                     icon = Icons.Filled.Settings,
@@ -165,7 +166,7 @@ fun TouchSettingsScreen(prefs: Preferences, onBack: () -> Unit) {
                     subtitle = "Ajustes finos de la apariencia",
                     items = 3,
                     index = 2,
-                    onClick = { context.startActivity(android.content.Intent(context, com.klisee.reloaded.TouchAppearanceActivity::class.java)) },
+                    onClick = { context.startActivity(android.content.Intent(context, io.reloadedfork.app.TouchAppearanceActivity::class.java)) },
                 )
             }
 

@@ -1,4 +1,4 @@
-package com.klisee.reloaded.ui
+package io.reloadedfork.app.ui
 
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
@@ -55,10 +55,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
-import com.klisee.reloaded.Preferences
-import com.klisee.reloaded.R
-import com.klisee.reloaded.discord.DiscordConfig
-import com.klisee.reloaded.discord.DiscordRpcManager
+import io.reloadedfork.app.Preferences
+import io.reloadedfork.app.R
+import io.reloadedfork.app.discord.DiscordConfig
+import io.reloadedfork.app.discord.DiscordRpcManager
 import kotlinx.coroutines.launch
 import java.io.File
 

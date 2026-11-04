@@ -1,4 +1,4 @@
-package com.klisee.reloaded.ui
+package io.reloadedfork.app.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -220,7 +220,7 @@ fun ModsScreen(filesDir: File, onBack: () -> Unit) {
                     Text(it, color = MaterialTheme.colorScheme.error)
                 }
                 Text(
-                    "Activa o desactiva los mods aquí o desde el botón Mods del título del juego. Los mods con scripts GML se aplican al reiniciar.",
+                    "Activa o desactiva los mods. Los cambios se aplican al reiniciar el juego.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
