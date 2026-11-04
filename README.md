@@ -5,11 +5,12 @@ Esta aplicación dejara de actualizarse de forma constante y solo lo hará para 
 # Pokémon Reloaded en Android
 
 [![Licencia GPL-2.0](https://img.shields.io/badge/Licencia-GPL--2.0-515050?style=for-the-badge&logo=gnu&logoColor=000000&labelColor=FFFFFF)](LICENSE)
-[![Última versión](https://img.shields.io/github/v/release/Klisee/pokemon-reloaded-android?style=for-the-badge&label=Versi%C3%B3n&labelColor=FFFFFF&color=3DDC84&logo=android&logoColor=000000)](https://github.com/Klisee/pokemon-reloaded-android/releases/latest)
-[![Descargas totales](https://img.shields.io/github/downloads/Klisee/pokemon-reloaded-android/total?style=for-the-badge&label=Descargas&labelColor=FFFFFF&color=1F6FEB&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI%2BPHBhdGggZmlsbD0iIzAwMCIgZD0iTTUgMjBoMTR2LTJINXYyek0xOSA5aC00VjNIOXY2SDVsNyA3IDctN3oiLz48L3N2Zz4%3D)](https://github.com/Klisee/pokemon-reloaded-android/releases)
+[![Última versión](https://img.shields.io/github/v/release/lionelmendozaparsons020-lab/pokemon-reloaded-android?style=for-the-badge&label=Versi%C3%B3n&labelColor=FFFFFF&color=3DDC84&logo=android&logoColor=000000)](https://github.com/lionelmendozaparsons020-lab/pokemon-reloaded-android/releases/latest)
+[![Descargas totales](https://img.shields.io/github/downloads/lionelmendozaparsons020-lab/pokemon-reloaded-android/total?style=for-the-badge&label=Descargas&labelColor=FFFFFF&color=1F6FEB&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI%2BPHBhdGggZmlsbD0iIzAwMCIgZD0iTTUgMjBoMTR2LTJINXYyek0xOSA5aC00VjNIOXY2SDVsNyA3IDctN3oiLz48L3N2Zz4%3D)](https://github.com/lionelmendozaparsons020-lab/pokemon-reloaded-android/releases)
 
-Ejecuta **Pokémon Reloaded** en Android sin emulador de Windows de por medio. Lo mantiene
-[@Klisee](https://github.com/Klisee), para la comunidad.
+Ejecuta **Pokémon Reloaded** en Android sin emulador de Windows de por medio. Fork mantenido por
+[@lionelmendozaparsons020-lab](https://github.com/lionelmendozaparsons020-lab), para la comunidad.
+Basado en el port Android original de [Klisee](https://github.com/Klisee/pokemon-reloaded-android) (GPL-2.0).
 
 ## Qué es esto, en realidad
 
@@ -145,7 +146,7 @@ El workflow `.github/workflows/build-apks.yml` compila las tres en CI al publica
 
 ## Licencia
 
-Copyright (C) 2026 Klisee y colaboradores.
+Copyright (C) 2026 Klisee y colaboradores (obra original). Modificaciones del fork: Copyright (C) 2026 lionelmendozaparsons020-lab.
 
 Este proyecto se distribuye bajo la **GNU General Public License v2.0** (`GPL-2.0-only`), la misma
 licencia que OpenGMK, del que toma el motor. El texto completo está en [LICENSE](LICENSE).
