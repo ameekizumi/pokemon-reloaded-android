@@ -178,9 +178,6 @@ pub struct Game {
     pub auto_draw: bool,
     pub mods_menu_open: bool,
     pub mods_click_handled: bool,
-    pub mods_menu_page: usize,
-    pub mods_menu_note: String,
-    pub mods_menu_cache: Vec<crate::mods::ModInfo>,
     pub gb_filter_active: bool,
     pub online_menu_open: bool,
     pub online_menu_dismissed: bool,
@@ -420,11 +417,6 @@ impl Game {
             "launching game\n  > param_string: \"{}\"\n  > program_directory: \"{}\"",
             param_string, program_directory
         );
-
-        // Mods must be in place BEFORE the game's scripts are compiled below: the script overrides
-        // are read while compiling, so preparing them later (in `run`) only worked from the second
-        // launch on, once an earlier session in the same process had filled the table.
-        crate::mods::prepare(program_directory);
 
         // Improve framepacing on Windows
         #[cfg(target_os = "windows")]
@@ -1116,11 +1108,7 @@ impl Game {
             .into_iter()
             .map(|t| {
                 t.map(|b| {
-                    // A script supplied by an enabled mod wins; otherwise apply the built-in fixups.
-                    let script_name = b.name.to_string();
-                    let original = String::from_utf8_lossy(&b.source.0);
-                    let fixed = crate::mods::script_override(&script_name)
-                        .or_else(|| crate::patches::fixup(&script_name, &original));
+                    let fixed = crate::mods::script_override(&b.name.to_string());
                     let source: &[u8] = match &fixed {
                         Some(text) => text.as_bytes(),
                         None => &b.source.0,
@@ -1426,9 +1414,6 @@ impl Game {
             auto_draw: true,
             mods_menu_open: false,
             mods_click_handled: false,
-            mods_menu_page: 0,
-            mods_menu_note: String::new(),
-            mods_menu_cache: Vec::new(),
             gb_filter_active: false,
             online_menu_open: false,
             online_menu_dismissed: false,
@@ -2135,8 +2120,6 @@ impl Game {
         crate::touch_controls::set_room(self.room.id);
         crate::touch_controls::set_dialogue(self.dialogue_open());
         crate::touch_controls::set_box_open(self.inside_box());
-        let (carrying, resting_target) = self.box_interaction();
-        crate::touch_controls::set_box_interaction(carrying, resting_target);
         crate::touch_controls::set_text_entry(self.text_entry_open());
         crate::touch_controls::set_picker_boxes(self.picker_boxes());
         crate::touch_controls::set_modal_open(self.modal_system() > 0);
@@ -2304,27 +2287,6 @@ impl Game {
     #[cfg(target_os = "android")]
     fn inside_box(&self) -> bool {
         self.global_number(b"ENCAJA", 0).is_some_and(|value| value != 0)
-    }
-
-    /// Read real cursor/slot state from MenuCajaControl (object 43, room 8).
-    /// Negative pkmnC values represent eggs; missing cursor data fails closed.
-    #[cfg(target_os = "android")]
-    fn box_interaction(&self) -> (bool, bool) {
-        if !self.inside_box() || self.room.id != 8 { return (false, false) }
-        let mut objects = self.room.instance_list.iter_by_object(43);
-        let Some(handle) = objects.next(&self.room.instance_list) else { return (false, false) };
-        let fields = self.room.instance_list.get(handle).fields.borrow();
-        let number = |name: &[u8]| -> Option<i32> {
-            let field = self.compiler.find_field_id(name)?;
-            match fields.get(&field)?.get(0)? {
-                gml::Value::Real(n) => Some(n.into_inner() as i32),
-                _ => None,
-            }
-        };
-        let carrying = number(b"pkmnC").is_none_or(|value| value != 0);
-        let resting = !carrying && number(b"PK").is_some_and(|value| value != 0)
-            && number(b"PKMN").is_some_and(|value| (1..=30).contains(&value));
-        (carrying, resting)
     }
 
     /// True while the game is showing its text-entry dialog, the one that draws the on-screen
@@ -2721,7 +2683,6 @@ impl Game {
             eprintln!("[mods] {} alternado a {}", id, if enabled { "OFF" } else { "ON" });
             self.apply_visual_settings(root);
         }
-        self.mods_menu_cache = crate::mods::list(root);
     }
 
     fn game_root(&self) -> PathBuf {
@@ -2732,28 +2693,12 @@ impl Game {
         self.game_root().join("mods/active.flag").is_file()
     }
 
-    /// Mods shown per page of the in-game manager.
-    const MODS_PER_PAGE: usize = 7;
-
     fn mods_menu_lines(&self) -> Vec<String> {
-        self.mods_menu_cache
-            .iter()
-            .map(|m| format!("{}  [{}]{}", m.name, if m.enabled { "ON" } else { "OFF" }, if m.restart { " *" } else { "" }))
+        std::fs::read_to_string(self.game_root().join("mods/menu.txt"))
+            .unwrap_or_default()
+            .lines()
+            .map(str::to_string)
             .collect()
-    }
-
-    fn mods_menu_pages(&self) -> usize {
-        self.mods_menu_cache.len().div_ceil(Self::MODS_PER_PAGE).max(1)
-    }
-
-    fn mods_menu_prev_rect(&self) -> (i32, i32, i32, i32) {
-        let (x1, _, _, y2) = self.mods_menu_panel();
-        (x1 + 8, y2 - 28, x1 + 48, y2 - 10)
-    }
-
-    fn mods_menu_next_rect(&self) -> (i32, i32, i32, i32) {
-        let (_, _, x2, y2) = self.mods_menu_panel();
-        (x2 - 48, y2 - 28, x2 - 8, y2 - 10)
     }
 
     fn mods_button_rect(&self) -> (i32, i32, i32, i32) {
@@ -2796,12 +2741,6 @@ impl Game {
             let (x, y) = (self.input.mouse_x(), self.input.mouse_y());
             let (x1, y1, x2, y2) = self.mods_button_rect();
             if x >= x1 && x <= x2 && y >= y1 && y <= y2 {
-                // Read the mods from disk each time the manager opens, so a mod imported from the
-                // launcher since the last visit is listed and can be switched right away.
-                let root = self.game_root();
-                self.mods_menu_cache = crate::mods::list(&root);
-                self.mods_menu_page = 0;
-                self.mods_menu_note.clear();
                 self.mods_menu_open = true;
             }
             return;
@@ -2816,33 +2755,21 @@ impl Game {
         self.mods_click_handled = true;
         let (x, y) = (self.input.mouse_x(), self.input.mouse_y());
         let root = self.game_root();
-        let first = self.mods_menu_page * Self::MODS_PER_PAGE;
-        for row in 0..Self::MODS_PER_PAGE {
-            let Some(entry) = self.mods_menu_cache.get(first + row).cloned() else { break };
-            let (x1, y1, x2, y2) = self.mods_menu_row(row);
+        let lines = self.mods_menu_lines();
+        for (index, line) in lines.iter().take(7).enumerate() {
+            let (x1, y1, x2, y2) = self.mods_menu_row(index);
             if x >= x1 && x <= x2 && y >= y1 && y <= y2 {
-                self.toggle_mod(&root, &entry.id);
-                let now_on = self.mods_menu_cache.iter().find(|m| m.id == entry.id).map(|m| m.enabled).unwrap_or(false);
-                self.mods_menu_note = if entry.restart {
-                    format!("{}: {} (reinicia el juego)", entry.name, if now_on { "ON" } else { "OFF" })
-                } else if !entry.description.is_empty() {
-                    entry.description.chars().take(46).collect()
+                let name = line.split("  [").next().unwrap_or("").trim().to_ascii_lowercase();
+                let id = if name == "crt" {
+                    Some("crt")
+                } else if name == "game boy" || name == "gb" {
+                    Some("gb")
                 } else {
-                    format!("{}: {}", entry.name, if now_on { "ON" } else { "OFF" })
+                    None
                 };
-                return;
-            }
-        }
-        let pages = self.mods_menu_pages();
-        if pages > 1 {
-            let (x1, y1, x2, y2) = self.mods_menu_prev_rect();
-            if x >= x1 && x <= x2 && y >= y1 && y <= y2 {
-                self.mods_menu_page = (self.mods_menu_page + pages - 1) % pages;
-                return;
-            }
-            let (x1, y1, x2, y2) = self.mods_menu_next_rect();
-            if x >= x1 && x <= x2 && y >= y1 && y <= y2 {
-                self.mods_menu_page = (self.mods_menu_page + 1) % pages;
+                if let Some(id) = id {
+                    self.toggle_mod(&root, id);
+                }
                 return;
             }
         }
@@ -3714,6 +3641,7 @@ impl Game {
     // Plays the game normally
     pub fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         let game_directory = self.decode_str(self.program_directory.as_ref()).into_owned();
+        crate::mods::prepare(&game_directory);
         self.apply_visual_settings(std::path::Path::new(&game_directory));
         self.init()?;
         handle_scene_change!(self);
