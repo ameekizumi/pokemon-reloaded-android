@@ -1788,15 +1788,12 @@ fn find_exe(dir: &Path) -> Option<PathBuf> {
     // off. Rank them instead: the original game, unless online mode is enabled in the launcher,
     // in which case the 30 FPS "(compatible)" build. The 60 FPS "Online.exe" is a last resort
     // because it needs a newer OpenGL than the emulator provides.
-    let online = fs::read_to_string(dir.join("reloaded-online.json"))
-        .map(|text| text.replace(' ', "").contains("\"enabled\":true"))
-        .unwrap_or(false);
     let rank = |path: &PathBuf| -> u8 {
         let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("").to_lowercase();
         match (name.contains("online"), name.contains("(compatible)")) {
-            (true, true) => if online { 0 } else { 2 },
+            (true, true) => 0, // developer's Online build wins whenever present
             (true, false) => 3,
-            _ => if online { 1 } else { 0 },
+            _ => 1,
         }
     };
     found.sort_by(|a, b| rank(a).cmp(&rank(b)).then_with(|| a.cmp(b)));

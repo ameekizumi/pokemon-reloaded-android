@@ -2379,6 +2379,7 @@ impl Game {
             self.online_menu_ignore_trigger = false;
         }
         if self.play_type == PlayType::Normal
+            && !self.externals.roz_used()
             && self.room.id == 30
             && !self.online_menu_open
             && !self.online_menu_ignore_trigger
