@@ -1,1 +1,7 @@
-
+<resources>
+    <string name="app_name">Pokemon Reloaded</string>
+    <string name="play">Play</string>
+    <string name="import_game">Import game</string>
+    <string name="log">Log</string>
+    <string name="about">About</string>
+</resources>
