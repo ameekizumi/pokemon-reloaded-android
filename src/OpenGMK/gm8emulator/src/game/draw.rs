@@ -519,13 +519,10 @@ impl Game {
         self.renderer.draw_roundrect(x1 as f64, y1 as f64, x2 as f64, y2 as f64, 0xffffff, 0xffffff, 0.45, true);
         let center = f64::from(x1 + x2) * 0.5;
         self.draw_colour = Colour::new(1.0, 1.0, 1.0);
-        let pages = self.mods_menu_pages();
-        let page = self.mods_menu_page.min(pages - 1);
-        let title = if pages > 1 { format!("Mods {}/{}", page + 1, pages) } else { String::from("Mods") };
         self.draw_string(
             Real::from(center),
             Real::from(f64::from(y1) + 5.0),
-            gml::String::from(title.as_str()),
+            gml::String::from("Mods"),
             None,
             None,
             Real::from(1.0),
@@ -535,7 +532,7 @@ impl Game {
             Real::from(1.0),
         );
         let lines = self.mods_menu_lines();
-        for (index, line) in lines.iter().skip(page * Self::MODS_PER_PAGE).take(Self::MODS_PER_PAGE).enumerate() {
+        for (index, line) in lines.iter().take(7).enumerate() {
             let (rx1, ry1, rx2, ry2) = self.mods_menu_row(index);
             let hovered = mouse_x >= rx1 && mouse_x <= rx2 && mouse_y >= ry1 && mouse_y <= ry2;
             if hovered {
@@ -573,7 +570,7 @@ impl Game {
             self.draw_string(
                 Real::from(center),
                 Real::from(f64::from(y1) + 40.0),
-                gml::String::from(crate::i18n::tr("Sin mods instalados", "No mods installed")),
+                gml::String::from("Sin mods activos"),
                 None,
                 None,
                 Real::from(1.0),
@@ -582,41 +579,6 @@ impl Game {
                 None,
                 Real::from(1.0),
             );
-        }
-        // Last thing the player touched (description, or "reinicia el juego" for script mods).
-        if !self.mods_menu_note.is_empty() {
-            self.draw_colour = Colour::new(0.75, 0.75, 0.75);
-            let note = self.mods_menu_note.clone();
-            self.draw_string(
-                Real::from(center),
-                Real::from(f64::from(y2) - 44.0),
-                gml::String::from(note.as_str()),
-                None,
-                None,
-                Real::from(1.0),
-                Real::from(1.0),
-                Real::from(0.0),
-                None,
-                Real::from(1.0),
-            );
-        }
-        if pages > 1 {
-            self.draw_colour = Colour::new(1.0, 1.0, 1.0);
-            for (rect, label) in [(self.mods_menu_prev_rect(), "<"), (self.mods_menu_next_rect(), ">")] {
-                let (px1, py1, px2, _) = rect;
-                self.draw_string(
-                    Real::from(f64::from(px1 + px2) * 0.5),
-                    Real::from(f64::from(py1) + 2.0),
-                    gml::String::from(label),
-                    None,
-                    None,
-                    Real::from(1.0),
-                    Real::from(1.0),
-                    Real::from(0.0),
-                    None,
-                    Real::from(1.0),
-                );
-            }
         }
         let (cx1, cy1, cx2, cy2) = self.mods_menu_close_rect();
         let close_hovered = mouse_x >= cx1 && mouse_x <= cx2 && mouse_y >= cy1 && mouse_y <= cy2;
