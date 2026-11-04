@@ -26,7 +26,17 @@ Desde 0.4.0 los mods están **desactivados por defecto**. El interruptor general
 
 - Si hay al menos un mod activo, el motor crea `mods/menu.txt` y `mods/active.flag`.
 - Con mods activos aparece un botón **Mods** en la esquina superior derecha del título; al pulsarlo se abre una pantalla propia a tamaño completo, como la de Opciones, con la lista de mods.
-- En el menú in-game puedes hacer clic en **CRT** o **Game Boy** para activarlos/desactivarlos en caliente. Los demás mods se siguen activando desde Ajustes → Mods en Android o editando `mod.ini` en PC.
+- En el menú in-game puedes pulsar **cualquier mod** (incluidos los importados) para activarlo o desactivarlo en caliente. El motor escribe `mods/menu.txt` (lo que se ve) y `mods/menu.ids` (la carpeta de cada fila, en el mismo orden). Si hay más de 7 mods, toca la cabecera `Mods 1/2 >` para pasar de página.
+- El botón **Mods** aparece siempre que el interruptor general esté activo y haya al menos un mod instalado, aunque todos estén en OFF.
+- Los efectos (CRT, Game Boy) y los archivos de `data/` se aplican al instante; los mods con `scripts/*.gml` necesitan reiniciar el juego.
+
+## Reloaded Online
+
+- Si existe `data/text/mundo.txt` (lo trae el complemento Online de PC: host en la primera línea y puerto en la segunda, o `host:puerto`), esa es la dirección del servidor que usa el puente en Android. Orden de prioridad: ajuste del lanzador → `mundo.txt` → servidor por defecto.
+- La app trae `assets/online/mundo.txt` y lo copia a `data/text/mundo.txt` del juego al preparar la instalación, solo si ese archivo no existe todavía.
+- Importar `Pokemon-Reloaded-Online-archivos.zip` con un juego ya instalado **no** reemplaza el juego: solo se guarda `data/text/mundo.txt`. Los `.exe` y `ROZ.dll` son de Windows y no se usan.
+- Si hay varios `.exe` en la carpeta del juego, se prefiere el original; el `.exe` Online solo se usa si es el único.
+- `ROZ.dll` no se puede cargar en Android: sus llamadas devuelven vacío/0 en lugar de cerrar el juego. El modo online lo da la capa propia de la app.
 - Solo **Volver** cierra la lista; el resto del título queda bloqueado mientras está abierta.
 
 
