@@ -18,13 +18,20 @@ enum class SaveProfile(val folder: String, val label: String) {
 /** Each save profile is accessed DIRECTLY: never through game/data, which switches profile. */
 class ProfileSaves(private val context: Context) {
     private val folders = listOf("partidas", "equipos", "char_custom")
+    // NORMAL = the folder the game really reads (game/data); nothing native switches profiles,
+    // so save_modes/normal never existed and Import stayed locked forever.
     private fun path(profile: SaveProfile): File =
-        File(context.filesDir, "save_modes/" + profile.folder)
+        if (profile == SaveProfile.NORMAL) File(context.filesDir, "game/data")
+        else File(context.filesDir, "save_modes/" + profile.folder)
     private fun root(profile: SaveProfile): File = path(profile).also {
-        check(it.isDirectory) { "Abrí y cerrá el juego una vez para preparar las partidas de " + profile.label }
+        if (!it.isDirectory) {
+            check(profile != SaveProfile.NORMAL) { "Primero instala el juego." }
+            check(it.mkdirs() || it.isDirectory) { "No se pudo crear la carpeta de " + profile.label }
+        }
         check(!java.nio.file.Files.isSymbolicLink(it.toPath())) { "Perfil de guardado inválido." }
     }
-    fun initialized(profile: SaveProfile): Boolean = path(profile).isDirectory
+    fun initialized(profile: SaveProfile): Boolean =
+        profile != SaveProfile.NORMAL || path(profile).isDirectory
     private fun checkClosed() { check(!GameSession.active) { "Cerrá el juego antes de modificar los guardados." } }
     private fun belongsToSlot(name: String, slot: Int): Boolean =
         (name.startsWith("reloaded$slot.") || name.startsWith("reloaded${slot}_")) &&
