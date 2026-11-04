@@ -89,21 +89,10 @@ fn try_prepare(root: &Path) -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    let active = if master_enabled { mods.iter().filter(|m| m.enabled).count() } else { 0 };
-    let menu = mods_dir.join("menu.txt");
-    let marker = mods_dir.join("active.flag");
-    if active > 0 {
-        let mut text = String::new();
-        for entry in &mods {
-            text.push_str(&format!("{}  [{}]\n", entry.name, if entry.enabled { "ON" } else { "OFF" }));
-        }
-        fs::write(&menu, text)?;
-        fs::write(&marker, b"1")?;
-        eprintln!("[mods] menu in-game disponible ({} activos)", active);
-    } else {
-        let _ = fs::remove_file(&menu);
-        let _ = fs::remove_file(&marker);
-    }
+    // The in-game list is available whenever mods are switched on at all, even if every one of
+    // them is currently OFF; otherwise the button would vanish and nothing could be turned back on.
+    write_menu(root);
+    eprintln!("[mods] menu in-game: {} mods instalados", mods.len());
     Ok(())
 }
 
@@ -195,39 +184,78 @@ pub fn set_enabled(root: &Path, id: &str, enabled: bool) -> bool {
     if fs::write(&manifest, out).is_err() {
         return false;
     }
+    // Data overlays can be applied or rolled back right now; the game re-reads those files the
+    // next time it loads them. GML script overrides are compiled at startup, so a mod that
+    // ships `scripts/` still needs a restart.
+    if master_enabled(root) {
+        let mod_dir = root.join("mods").join(id);
+        let backup = root.join("mods").join(".backup").join(id);
+        let result = if enabled { apply_overlay(&mod_dir, root, &backup).map(|_| ()) } else { restore_overlay(root, &backup) };
+        if let Err(err) = result {
+            eprintln!("[mods] {id}: no pude {} los archivos: {err}", if enabled { "aplicar" } else { "restaurar" });
+        }
+        if mod_dir.join("scripts").is_dir() {
+            eprintln!("[mods] {id}: los scripts GML cambian al reiniciar el juego");
+        }
+    }
     refresh_menu(root);
     true
 }
 
-/// Rewrites `mods/menu.txt` from the manifests, so the in-game list reflects a live toggle.
+/// Rewrites `mods/menu.txt` (what the player sees) and `mods/menu.ids` (the folder id behind each
+/// row, same order) from the manifests, so the in-game list reflects a live toggle and every
+/// imported mod can be toggled, not just the bundled ones.
 pub fn refresh_menu(root: &Path) {
+    write_menu(root);
+}
+
+fn write_menu(root: &Path) {
     let mods_dir = root.join("mods");
-    let Ok(entries) = fs::read_dir(&mods_dir) else { return };
-    let mut mods = Vec::new();
-    for entry in entries.flatten() {
-        let path = entry.path();
-        if !path.is_dir() {
-            continue;
-        }
-        let manifest = path.join("mod.ini");
-        if !manifest.is_file() {
-            continue;
-        }
-        let (name, enabled) = parse_manifest(&manifest);
-        mods.push((name, enabled));
-    }
-    mods.sort();
-    let mut text = String::new();
-    for (name, enabled) in &mods {
-        text.push_str(&format!("{}  [{}]\n", name, if *enabled { "ON" } else { "OFF" }));
-    }
-    let _ = fs::write(mods_dir.join("menu.txt"), text);
     let marker = mods_dir.join("active.flag");
-    if mods.iter().any(|(_, enabled)| *enabled) {
-        let _ = fs::write(marker, b"1");
-    } else {
-        let _ = fs::remove_file(marker);
+    let menu = mods_dir.join("menu.txt");
+    let ids = mods_dir.join("menu.ids");
+    let mut mods: Vec<(String, String, bool)> = Vec::new();
+    if let Ok(entries) = fs::read_dir(&mods_dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if !path.is_dir() || entry.file_name().to_string_lossy().starts_with('.') {
+                continue;
+            }
+            let manifest = path.join("mod.ini");
+            if !manifest.is_file() {
+                continue;
+            }
+            let (name, enabled) = parse_manifest(&manifest);
+            mods.push((entry.file_name().to_string_lossy().to_string(), name, enabled));
+        }
     }
+    mods.sort_by(|a, b| a.0.to_ascii_lowercase().cmp(&b.0.to_ascii_lowercase()));
+    if !master_enabled(root) || mods.is_empty() {
+        let _ = fs::remove_file(&menu);
+        let _ = fs::remove_file(&ids);
+        let _ = fs::remove_file(&marker);
+        return;
+    }
+    let mut text = String::new();
+    let mut id_text = String::new();
+    for (id, name, enabled) in &mods {
+        text.push_str(&format!("{}  [{}]\n", name, if *enabled { "ON" } else { "OFF" }));
+        id_text.push_str(id);
+        id_text.push('\n');
+    }
+    let _ = fs::write(&menu, text);
+    let _ = fs::write(&ids, id_text);
+    let _ = fs::write(&marker, b"1");
+}
+
+/// The mod folder ids behind each row of `mods/menu.txt`, in the same order.
+pub fn menu_ids(root: &Path) -> Vec<String> {
+    fs::read_to_string(root.join("mods").join("menu.ids"))
+        .unwrap_or_default()
+        .lines()
+        .map(|line| line.trim().to_string())
+        .filter(|line| !line.is_empty())
+        .collect()
 }
 
 

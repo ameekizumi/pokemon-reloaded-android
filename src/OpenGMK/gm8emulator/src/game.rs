@@ -177,6 +177,7 @@ pub struct Game {
     pub model_matrix_stack: Vec<[f32; 16]>,
     pub auto_draw: bool,
     pub mods_menu_open: bool,
+    pub mods_menu_page: usize,
     pub mods_click_handled: bool,
     pub gb_filter_active: bool,
     pub online_menu_open: bool,
@@ -1414,6 +1415,7 @@ impl Game {
             model_matrix_stack: Vec::new(),
             auto_draw: true,
             mods_menu_open: false,
+            mods_menu_page: 0,
             mods_click_handled: false,
             gb_filter_active: false,
             online_menu_open: false,
@@ -2694,6 +2696,19 @@ impl Game {
         self.game_root().join("mods/active.flag").is_file()
     }
 
+    /// Rows shown at once in the in-game Mods screen; more mods are reached by paging.
+    const MODS_PER_PAGE: usize = 7;
+
+    fn mods_menu_pages(&self) -> usize {
+        ((self.mods_menu_lines().len() + Self::MODS_PER_PAGE - 1) / Self::MODS_PER_PAGE).max(1)
+    }
+
+    /// The header strip of the Mods screen; tapping it flips to the next page.
+    fn mods_menu_header_rect(&self) -> (i32, i32, i32, i32) {
+        let (x1, y1, x2, _) = self.mods_menu_panel();
+        (x1, y1, x2, y1 + 26)
+    }
+
     fn mods_menu_lines(&self) -> Vec<String> {
         std::fs::read_to_string(self.game_root().join("mods/menu.txt"))
             .unwrap_or_default()
@@ -2757,19 +2772,33 @@ impl Game {
         let (x, y) = (self.input.mouse_x(), self.input.mouse_y());
         let root = self.game_root();
         let lines = self.mods_menu_lines();
-        for (index, line) in lines.iter().take(7).enumerate() {
+        let pages = self.mods_menu_pages();
+        if self.mods_menu_page >= pages {
+            self.mods_menu_page = 0;
+        }
+        if pages > 1 {
+            let (x1, y1, x2, y2) = self.mods_menu_header_rect();
+            if x >= x1 && x <= x2 && y >= y1 && y <= y2 {
+                self.mods_menu_page = (self.mods_menu_page + 1) % pages;
+                return;
+            }
+        }
+        let ids = crate::mods::menu_ids(&root);
+        let first = self.mods_menu_page * Self::MODS_PER_PAGE;
+        for (index, line) in lines.iter().skip(first).take(Self::MODS_PER_PAGE).enumerate() {
             let (x1, y1, x2, y2) = self.mods_menu_row(index);
             if x >= x1 && x <= x2 && y >= y1 && y <= y2 {
+                // Every mod, bundled or imported, is toggled by its folder id from menu.ids. The
+                // name match below is only a fallback for a menu written by an older build.
                 let name = line.split("  [").next().unwrap_or("").trim().to_ascii_lowercase();
-                let id = if name == "crt" {
-                    Some("crt")
-                } else if name == "game boy" || name == "gb" {
-                    Some("gb")
-                } else {
-                    None
+                let id = match ids.get(first + index) {
+                    Some(id) => Some(id.clone()),
+                    None if name == "crt" => Some("crt".to_string()),
+                    None if name == "game boy" || name == "gb" => Some("gb".to_string()),
+                    None => None,
                 };
                 if let Some(id) = id {
-                    self.toggle_mod(&root, id);
+                    self.toggle_mod(&root, &id);
                 }
                 return;
             }

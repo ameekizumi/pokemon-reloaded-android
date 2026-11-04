@@ -34,6 +34,24 @@ struct ReloadedOnlineConfig {
     bridge_upstream: String,
 }
 
+/// Reads `data/text/mundo.txt` from the Reloaded Online release: the host on the first line and
+/// the port on the second (a single `host:port` line is accepted too). Anything malformed is
+/// ignored so a bad file can never stop the game from starting.
+fn read_world_server(program_directory: &str) -> Option<String> {
+    let text = std::fs::read_to_string(Path::new(program_directory).join("data/text/mundo.txt")).ok()?;
+    let mut lines = text.lines().map(str::trim).filter(|line| !line.is_empty());
+    let first = lines.next()?;
+    let (host, port) = match first.rsplit_once(':') {
+        Some((host, port)) => (host.trim(), port.trim().to_string()),
+        None => (first, lines.next()?.to_string()),
+    };
+    let port: u16 = port.parse().ok().filter(|port| *port != 0)?;
+    let valid_host = !host.is_empty()
+        && host.len() <= 253
+        && host.chars().all(|c| c.is_ascii_alphanumeric() || c == '.' || c == '-');
+    valid_host.then(|| format!("{host}:{port}"))
+}
+
 fn default_server() -> String {
     "127.0.0.1:7777".into()
 }
@@ -94,6 +112,8 @@ pub struct ReloadedOnline {
     server: String,
     room_name: String,
     bridge_upstream: String,
+    /// Server named by the Online release's own `data/text/mundo.txt`, if present.
+    world_server: String,
     last_send: Instant,
     last_draw: Instant,
     last_debug: Instant,
@@ -114,6 +134,7 @@ impl Default for ReloadedOnline {
             server: default_server(),
             room_name: default_room(),
             bridge_upstream: String::new(),
+            world_server: String::new(),
             last_send: Instant::now(),
             last_draw: Instant::now(),
             last_debug: Instant::now(),
@@ -129,6 +150,7 @@ impl Default for ReloadedOnline {
 impl ReloadedOnline {
     pub fn new(program_directory: &str) -> Self {
         let mut online = Self::default();
+        online.world_server = read_world_server(program_directory).unwrap_or_default();
         let path = Path::new(program_directory).join("reloaded-online.json");
         let Ok(text) = std::fs::read_to_string(&path) else {
             return online
@@ -179,10 +201,14 @@ impl ReloadedOnline {
         self.stop();
         let mut server = self.server.clone();
         if use_bridge {
-            let upstream = if self.bridge_upstream.trim().is_empty() {
-                "64.177.48.215:5000".to_string()
-            } else {
+            // Priority: the launcher's own setting, then the server the Online release ships in
+            // data/text/mundo.txt, then the community server this build was made against.
+            let upstream = if !self.bridge_upstream.trim().is_empty() {
                 self.bridge_upstream.trim().to_string()
+            } else if !self.world_server.is_empty() {
+                self.world_server.clone()
+            } else {
+                "64.177.48.215:5000".to_string()
             };
             match std::net::TcpListener::bind("127.0.0.1:0") {
                 Ok(listener) => {
