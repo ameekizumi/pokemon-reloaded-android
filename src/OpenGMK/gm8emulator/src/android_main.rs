@@ -492,6 +492,28 @@ fn touch_feedback() {
     });
 }
 
+// Only the PC box uses a long press; menus, text entry and info overlays keep their input.
+static BOX_TOUCH: Mutex<crate::box_touch::BoxTouch> = Mutex::new(crate::box_touch::BoxTouch::new());
+
+fn box_touch_active() -> bool {
+    use crate::touch_controls as tc;
+    tc::box_open() && tc::current_context() == tc::MENU
+        && !tc::info_window_open() && !tc::text_entry_open()
+        && !matches!(tc::modal_id(), 9673 | 9674 | 7778)
+}
+
+fn emit_box_events(events: Vec<crate::box_touch::Event>) {
+    use crate::box_touch::{Event, Point};
+    use ramen::platform::android::InputEvent;
+    for event in events {
+        android::push_input(match event {
+            Event::Move(Point(x, y)) => InputEvent::PointerMoved { x, y },
+            Event::Down(Point(x, y), button) => InputEvent::PointerDown { x, y, button },
+            Event::Up(Point(x, y), button) => InputEvent::PointerUp { x, y, button },
+        });
+    }
+}
+
 fn pointer_down(id: i32, x: f32, y: f32) {
     // A new gesture cannot inherit a swallowed Up from an Android cancellation.
     if let Some(ids)=SWALLOWED_INPUTS.lock().unwrap().as_mut(){ids.remove(&id);}
@@ -502,6 +524,14 @@ fn pointer_down(id: i32, x: f32, y: f32) {
     if crate::touch_controls::pad_active() {
         crate::touch_controls::set_pad_active(false);
         SWALLOWED_INPUTS.lock().unwrap().get_or_insert_with(std::collections::HashSet::new).insert(id);
+        return
+    }
+    if box_touch_active() {
+        if BOX_TOUCH.lock().unwrap().begin(id, crate::box_touch::Point(x, y), hf, Instant::now(), crate::touch_controls::box_carrying()) {
+            android::push_input(ramen::platform::android::InputEvent::PointerMoved { x, y });
+        } else {
+            SWALLOWED_INPUTS.lock().unwrap().get_or_insert_with(std::collections::HashSet::new).insert(id);
+        }
         return
     }
     let on_movement = wf > 0.0 && hf > 0.0 && crate::touch_controls::movement_hit(x / wf, y / hf, wf, hf);
@@ -565,6 +595,7 @@ fn pointer_down(id: i32, x: f32, y: f32) {
 }
 
 fn pointer_up(id: i32, x: f32, y: f32) {
+    if BOX_TOUCH.lock().unwrap().end(id, crate::box_touch::Point(x, y), Instant::now()) { return }
     if crate::touch_navigation::owns(id){
         if let Some((x,y))=crate::touch_navigation::end(id,x,y){android::push_input(ramen::platform::android::InputEvent::PointerMoved{x,y});}return
     }
@@ -792,9 +823,12 @@ fn movement_release() {
 }
 
 fn release_touch_profile() {
+    let (box_id, box_events) = BOX_TOUCH.lock().unwrap().cancel();
+    emit_box_events(box_events);
     let held = POINTER_CONTROLS.lock().unwrap().take().unwrap_or_default();
     let mut swallowed = SWALLOWED_INPUTS.lock().unwrap();
     let ids = swallowed.get_or_insert_with(std::collections::HashSet::new);
+    if let Some(id) = box_id { ids.insert(id); }
     for (id, index) in held {
         control_key_up(index);
         ids.insert(id);
@@ -886,6 +920,7 @@ fn translate(event: &InputEvent) {
                     let wheel_ptr = *WHEEL_PTR.lock().unwrap();
                     for p in motion.pointers() {
                         if SWALLOWED_INPUTS.lock().unwrap().as_ref().is_some_and(|ids|ids.contains(&p.pointer_id())){continue}
+                        if BOX_TOUCH.lock().unwrap().moved(p.pointer_id(), crate::box_touch::Point(p.x(), p.y()), Instant::now()) { continue }
                         if crate::touch_navigation::moved(p.pointer_id(),p.x(),p.y()){continue}
                         if wheel_ptr == Some(p.pointer_id()) {
                             let (w, h) = android::window_size();
@@ -1046,7 +1081,7 @@ fn ime_char_to_key(c: char) -> Key {
 
 /// Called from the activity's `InputConnection` for every committed string.
 #[no_mangle]
-pub extern "system" fn Java_com_klisee_reloaded_GameActivity_nativeCommitText<'local>(
+pub extern "system" fn Java_io_reloadedfork_app_GameActivity_nativeCommitText<'local>(
     mut env: jni::JNIEnv<'local>,
     _this: jni::objects::JObject<'local>,
     text: jni::objects::JString<'local>,
@@ -1062,7 +1097,7 @@ pub extern "system" fn Java_com_klisee_reloaded_GameActivity_nativeCommitText<'l
 
 /// Called from the activity's `InputConnection` for the delete key.
 #[no_mangle]
-pub extern "system" fn Java_com_klisee_reloaded_GameActivity_nativeBackspace<'local>(
+pub extern "system" fn Java_io_reloadedfork_app_GameActivity_nativeBackspace<'local>(
     _env: jni::JNIEnv<'local>,
     _this: jni::objects::JObject<'local>,
 ) {
@@ -1073,7 +1108,7 @@ pub extern "system" fn Java_com_klisee_reloaded_GameActivity_nativeBackspace<'lo
 
 /// Called from the activity's `InputConnection` for the enter/done key.
 #[no_mangle]
-pub extern "system" fn Java_com_klisee_reloaded_GameActivity_nativeEnter<'local>(
+pub extern "system" fn Java_io_reloadedfork_app_GameActivity_nativeEnter<'local>(
     _env: jni::JNIEnv<'local>,
     _this: jni::objects::JObject<'local>,
 ) {
@@ -1085,7 +1120,7 @@ pub extern "system" fn Java_com_klisee_reloaded_GameActivity_nativeEnter<'local>
 /// Called from the activity whenever the system keyboard's height changes, so the renderer can keep
 /// the game above it.
 #[no_mangle]
-pub extern "system" fn Java_com_klisee_reloaded_GameActivity_nativeImeInset<'local>(
+pub extern "system" fn Java_io_reloadedfork_app_GameActivity_nativeImeInset<'local>(
     _env: jni::JNIEnv<'local>,
     _this: jni::objects::JObject<'local>,
     height: jni::sys::jint,
@@ -1105,7 +1140,7 @@ pub extern "system" fn Java_com_klisee_reloaded_GameActivity_nativeImeInset<'loc
 /// Called from the activity when another app takes (or gives back) the audio focus, so the game's
 /// output does not talk over a call or a notification.
 #[no_mangle]
-pub extern "system" fn Java_com_klisee_reloaded_GameActivity_nativeAudioFocus<'local>(
+pub extern "system" fn Java_io_reloadedfork_app_GameActivity_nativeAudioFocus<'local>(
     _env: jni::JNIEnv<'local>,
     _this: jni::objects::JObject<'local>,
     lost: jni::sys::jboolean,
@@ -1312,7 +1347,7 @@ fn with_activity(f: impl FnOnce(&mut jni::JNIEnv, &jni::objects::JClass) -> jni:
         let loaded = (|| -> jni::errors::Result<jni::objects::GlobalRef> {
             let context = unsafe { jni::objects::JObject::from_raw(ctx.context().cast()) };
             let loader = env.call_method(&context, "getClassLoader", "()Ljava/lang/ClassLoader;", &[])?.l()?;
-            let name = env.new_string("com.klisee.reloaded.GameActivity")?;
+            let name = env.new_string("io.reloadedfork.app.GameActivity")?;
             let class = env
                 .call_method(
                     &loader,
@@ -1496,6 +1531,12 @@ pub fn android_entry(app: AndroidApp) {
     // The pad layout, the touch overlay and the video mode are read once, before any input can arrive.
     load_controls();
     load_touch();
+    // Official F3 cheats are part of Pokémon Reloaded; this flag merely exposes
+    // their existing key on the touch overlay, without patching game data.
+    let official_f3 = fs::read_to_string(storage_path("mods.conf"))
+        .map(|text| text.lines().any(|line| line.trim() == "official_f3=1"))
+        .unwrap_or(false);
+    crate::touch_controls::set_official_f3_enabled(official_f3);
     load_video();
     crate::touch_controls::load_layout(&fs::read_to_string(storage_path("touch-layout.conf")).unwrap_or_default());
     crate::touch_appearance::load(&fs::read_to_string(storage_path("touch-appearance.conf")).unwrap_or_default());
@@ -1719,7 +1760,7 @@ use std::{
 /// Where the app looks for `game.zip`, most specific first. The first two are the app's own
 /// storage and need no permissions; the last one is shared storage and may need one.
 const ZIP_NAME: &str = "game.zip";
-pub(crate) const PACKAGE_DIR: &str = "com.klisee.reloaded";
+pub(crate) const PACKAGE_DIR: &str = "io.reloadedfork.app";
 
 /// The app's internal storage, as the running Activity reports it (`Context.getFilesDir()`).
 /// `android_entry` sets it from `AndroidApp::internal_data_path()`; the fallback only matters on a
@@ -1783,7 +1824,23 @@ fn find_exe(dir: &Path) -> Option<PathBuf> {
             path.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("exe"))
         })
         .collect::<Vec<_>>();
-    found.sort();
+    // Several executables can sit side by side once the Reloaded Online files are copied in.
+    // Alphabetical order used to pick "... Online (compatible).exe" first, even with online mode
+    // off. Rank them instead: the original game, unless online mode is enabled in the launcher,
+    // in which case the 30 FPS "(compatible)" build. The 60 FPS "Online.exe" is a last resort
+    // because it needs a newer OpenGL than the emulator provides.
+    let online = fs::read_to_string(dir.join("reloaded-online.json"))
+        .map(|text| text.replace(' ', "").contains("\"enabled\":true"))
+        .unwrap_or(false);
+    let rank = |path: &PathBuf| -> u8 {
+        let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("").to_lowercase();
+        match (name.contains("online"), name.contains("(compatible)")) {
+            (true, true) => if online { 0 } else { 2 },
+            (true, false) => 3,
+            _ => if online { 1 } else { 0 },
+        }
+    };
+    found.sort_by(|a, b| rank(a).cmp(&rank(b)).then_with(|| a.cmp(b)));
     found.into_iter().next()
 }
 
