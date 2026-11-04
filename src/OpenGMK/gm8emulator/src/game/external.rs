@@ -159,6 +159,14 @@ impl ExternalManager {
             dummy = Some(gml::Value::Real(0.into()));
         }
 
+        // ROZ.dll is the Windows socket helper of the PC "Reloaded Online" executable
+        // (net_connect, net_send, net_recv...). It cannot be loaded here; the app's own online
+        // layer replaces it. Answering with an empty result keeps that executable running
+        // offline instead of aborting on the first call. On 32-bit Windows the real DLL still loads.
+        if !cfg!(all(target_os = "windows", target_arch = "x86")) && dll.eq_ignore_ascii_case("roz.dll") {
+            dummy = Some(if sym == "net_recv" { gml::Value::Str("".into()) } else { gml::Value::Real(0.into()) });
+        }
+
         dummy
     }
 }

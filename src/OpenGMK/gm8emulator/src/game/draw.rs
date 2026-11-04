@@ -519,10 +519,13 @@ impl Game {
         self.renderer.draw_roundrect(x1 as f64, y1 as f64, x2 as f64, y2 as f64, 0xffffff, 0xffffff, 0.45, true);
         let center = f64::from(x1 + x2) * 0.5;
         self.draw_colour = Colour::new(1.0, 1.0, 1.0);
+        let pages = self.mods_menu_pages();
+        let page = self.mods_menu_page.min(pages - 1);
+        let title = if pages > 1 { format!("Mods  {}/{}  >", page + 1, pages) } else { "Mods".to_string() };
         self.draw_string(
             Real::from(center),
             Real::from(f64::from(y1) + 5.0),
-            gml::String::from("Mods"),
+            gml::String::from(title.as_str()),
             None,
             None,
             Real::from(1.0),
@@ -532,7 +535,7 @@ impl Game {
             Real::from(1.0),
         );
         let lines = self.mods_menu_lines();
-        for (index, line) in lines.iter().take(7).enumerate() {
+        for (index, line) in lines.iter().skip(page * Self::MODS_PER_PAGE).take(Self::MODS_PER_PAGE).enumerate() {
             let (rx1, ry1, rx2, ry2) = self.mods_menu_row(index);
             let hovered = mouse_x >= rx1 && mouse_x <= rx2 && mouse_y >= ry1 && mouse_y <= ry2;
             if hovered {
@@ -570,7 +573,7 @@ impl Game {
             self.draw_string(
                 Real::from(center),
                 Real::from(f64::from(y1) + 40.0),
-                gml::String::from("Sin mods activos"),
+                gml::String::from("Sin mods instalados"),
                 None,
                 None,
                 Real::from(1.0),
