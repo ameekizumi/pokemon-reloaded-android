@@ -184,15 +184,12 @@ class GameRepository(private val context: Context) {
     // Same ranking as the native side (android_main.rs `find_exe`): with the Reloaded Online
     // files copied in there are several executables, and the first one on disk is not the right one.
     private fun findExe(dir: File): File? {
-        val online = runCatching {
-            JSONObject(File(dir, "reloaded-online.json").readText()).optBoolean("enabled", false)
-        }.getOrDefault(false)
         fun rank(f: File): Int {
             val name = f.name.lowercase()
             return when {
-                "online" in name && "(compatible)" in name -> if (online) 0 else 2
+                "online" in name && "(compatible)" in name -> 0 // developer's Online build wins whenever present
                 "online" in name -> 3
-                else -> if (online) 1 else 0
+                else -> 1
             }
         }
         return dir.listFiles()
@@ -638,6 +635,23 @@ class GameRepository(private val context: Context) {
         foldZipNamesToAscii(zip)
         val plan = planZip(zip, log)
         log("Zip válido: ${plan.items.count { !it.directory }} archivos, ${formatBytes(plan.totalBytes)} sin comprimir.")
+
+        // Reloaded Online add-on (.exe + ROZ.dll + data/text/mundo.txt): it carries no game data, so
+        // it is merged into the installed game instead of replacing it (which used to wipe the
+        // game and leave only mundo.txt). Saves are never touched.
+        val dataFiles = plan.items.count { !it.directory && it.path.startsWith("data/") }
+        if (dataFiles < 5 && gameDir.isDirectory && File(gameDir, "data").isDirectory &&
+            plan.items.any { !it.directory && it.path.endsWith(".exe", ignoreCase = true) }
+        ) {
+            log("Complemento Online detectado: se añade al juego instalado sin reemplazarlo.")
+            val addon = ZipPlan(
+                plan.items.filter { item -> saveFolders.none { item.path.startsWith("data/$it/") } },
+                plan.totalBytes,
+            )
+            extractZip(zip, addon, gameDir, onProgress, log)
+            onProgress(100)
+            return
+        }
 
         // A previous failed attempt can leave a lot in staging, so clear it before measuring the
         // free space it would otherwise hide.
