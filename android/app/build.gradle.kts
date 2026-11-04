@@ -18,7 +18,8 @@ val keystoreProperties = Properties().apply {
 //   ./build.sh assembleRelease -PtargetAbi=x86_64
 //   ./build.sh assembleRelease -PtargetAbi=universal
 // after building the same ABIs with cargo-ndk (the error below prints the exact commands).
-val appVersion = "0.4.1"
+val controlsBuild = providers.gradleProperty("controlsBuild").orNull == "true"
+val appVersion = if (controlsBuild) "1.0.0-ui.1" else "1.0.0"
 val allAbis = listOf("arm64-v8a", "armeabi-v7a", "x86_64")
 val rustTargetOf = mapOf(
     "arm64-v8a" to "aarch64-linux-android",
@@ -50,16 +51,18 @@ val copyEmulatorSo by tasks.registering {
 }
 
 android {
-    namespace = "com.klisee.reloaded"
+    namespace = "io.reloadedfork.app"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.klisee.reloaded"
+        applicationId = if (controlsBuild) "io.reloadedfork.app.controles" else "io.reloadedfork.app"
         // AAudio exists since Android 8 (API 26), which is the real floor of the engine.
-        minSdk = 26
+        minSdk = if (controlsBuild) 29 else 26
         targetSdk = 36
-        versionCode = 18
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        versionCode = if (controlsBuild) 2 else 1
         versionName = appVersion
+        manifestPlaceholders["launcherLabel"] = if (controlsBuild) "Pokemon Reloaded Controles" else "@string/app_name"
         ndk { abiFilters += buildAbis }
     }
 
@@ -111,6 +114,10 @@ androidComponents {
 }
 
 dependencies {
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.13.0-alpha01")
+    androidTestImplementation("androidx.test:runner:1.7.0")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    testImplementation("junit:junit:4.13.2")
     implementation("androidx.core:core-ktx:1.19.0")
     implementation("androidx.activity:activity-compose:1.13.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.11.0")
