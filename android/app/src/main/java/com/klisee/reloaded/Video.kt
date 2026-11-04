@@ -1,4 +1,4 @@
-package com.klisee.reloaded
+package io.reloadedfork.app
 
 import java.io.File
 import kotlin.math.roundToInt

@@ -1,4 +1,4 @@
-package com.klisee.reloaded
+package io.reloadedfork.app
 
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
@@ -17,8 +17,9 @@ import java.util.zip.ZipFile
  * published, so there is no server to keep running and nothing to keep in step.
  */
 object Update {
-    private const val REPO = "Klisee/pokemon-reloaded-android"
-    private const val LATEST = "https://api.github.com/repos/$REPO/releases/latest"
+    // Single release channel: this fork's own repository. Nothing points at the upstream project.
+    private const val REPO = "lionelmendozaparsons020-lab/pokemon-reloaded-android"
+    internal fun repositoryFor(@Suppress("UNUSED_PARAMETER") installed: String): String = REPO
     const val RELEASES_PAGE = "https://github.com/$REPO/releases/latest"
 
     data class Release(val version: String, val apkUrl: String?, val pageUrl: String, val digest: String? = null)
@@ -27,7 +28,8 @@ object Update {
     /** The newer release, or `null` when the installed build is already the latest one. */
     suspend fun check(installed: String): Result<Release?> = withContext(Dispatchers.IO) {
         runCatching {
-            val json = JSONObject(get(LATEST))
+            val repository = repositoryFor(installed)
+            val json = JSONObject(get("https://api.github.com/repos/$repository/releases/latest"))
             val tag = json.optString("tag_name").trim().trimStart('v', 'V')
             if (tag.isEmpty() || !isNewer(tag, installed)) {
                 return@runCatching null
@@ -42,7 +44,7 @@ object Update {
                 }
             }.orEmpty()
             val apk = chooseApk(assets, android.os.Build.SUPPORTED_ABIS.toList())
-            Release(tag, apk?.url, json.optString("html_url").ifEmpty { RELEASES_PAGE }, apk?.digest)
+            Release(tag, apk?.url, json.optString("html_url").ifEmpty { "https://github.com/$repository/releases/latest" }, apk?.digest)
         }
     }
 
@@ -140,6 +142,7 @@ object Update {
     private fun get(url: String): String {
         val connection = open(url)
         connection.connect()
+        if (connection.responseCode == 404) return "{}" // No release published for this edition yet.
         if (connection.responseCode !in 200..299) error("GitHub respondio ${connection.responseCode}.")
         return connection.inputStream.bufferedReader().use { it.readText() }
     }

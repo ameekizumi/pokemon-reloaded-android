@@ -1,4 +1,4 @@
-package com.klisee.reloaded
+package io.reloadedfork.app
 
 import android.content.Context
 import android.net.Uri
@@ -114,13 +114,39 @@ class GameRepository(private val context: Context) {
 
     /** Frees the extracted game and any half-finished install, leaving the launcher ready again. */
     suspend fun deleteGame() = withContext(Dispatchers.IO) {
-        gameDir.deleteRecursively()
+        deleteTreeSafely(gameDir)
         metaFile.delete()
-        File(files, "game.staging").deleteRecursively()
-        File(files, "game.old").deleteRecursively()
-        File(files, "game.saves").deleteRecursively()
+        deleteTreeSafely(File(files, "game.staging"))
+        deleteTreeSafely(File(files, "game.old"))
+        deleteTreeSafely(File(files, "game.saves"))
         Unit
     }
+
+    /** Delete installed assets without following save-profile symlinks. */
+    private fun deleteTreeSafely(root: File): Boolean = runCatching {
+        val path = root.toPath()
+        if (!java.nio.file.Files.exists(path, java.nio.file.LinkOption.NOFOLLOW_LINKS)) return@runCatching
+        java.nio.file.Files.walkFileTree(
+            path,
+            object : java.nio.file.SimpleFileVisitor<java.nio.file.Path>() {
+                override fun visitFile(
+                    file: java.nio.file.Path,
+                    attrs: java.nio.file.attribute.BasicFileAttributes,
+                ): java.nio.file.FileVisitResult {
+                    java.nio.file.Files.deleteIfExists(file)
+                    return java.nio.file.FileVisitResult.CONTINUE
+                }
+                override fun postVisitDirectory(
+                    dir: java.nio.file.Path,
+                    error: java.io.IOException?,
+                ): java.nio.file.FileVisitResult {
+                    if (error != null) throw error
+                    java.nio.file.Files.deleteIfExists(dir)
+                    return java.nio.file.FileVisitResult.CONTINUE
+                }
+            },
+        )
+    }.isSuccess
 
     /**
      * Finishes or rolls back an install that was interrupted (the app was killed, the phone ran out
@@ -131,21 +157,21 @@ class GameRepository(private val context: Context) {
         val staging = File(files, "game.staging")
         val previous = File(files, "game.old")
         if (looksLikeGame(gameDir)) {
-            staging.deleteRecursively()
-            previous.deleteRecursively()
+            deleteTreeSafely(staging)
+            deleteTreeSafely(previous)
             return
         }
         // A `game` folder without an exe or data is a leftover, not an install; it must not block
         // the complete extraction (or the previous game) waiting beside it.
-        if (gameDir.exists()) gameDir.deleteRecursively()
+        if (gameDir.exists()) deleteTreeSafely(gameDir)
         if (looksLikeGame(staging) && staging.renameTo(gameDir)) {
             trace("install: recuperada una extraccion completa de game.staging")
-            previous.deleteRecursively()
+            deleteTreeSafely(previous)
         } else if (looksLikeGame(previous) && previous.renameTo(gameDir)) {
             trace("install: restaurado el juego anterior desde game.old")
         } else {
-            staging.deleteRecursively()
-            previous.deleteRecursively()
+            deleteTreeSafely(staging)
+            deleteTreeSafely(previous)
         }
     }
 
@@ -155,47 +181,24 @@ class GameRepository(private val context: Context) {
         return data.isDirectory && data.listFiles()?.isNotEmpty() == true
     }
 
-    /**
-     * The game executable. When the PC "Reloaded Online" executables were dropped in next to the
-     * original one there are several `.exe` files, and `listFiles()` has no defined order. The
-     * original is preferred: the Online `.exe` relies on `ROZ.dll`, which cannot run on Android,
-     * and the app already has its own online layer. An Online `.exe` is still used if it is all
-     * there is.
-     */
+    // Same ranking as the native side (android_main.rs `find_exe`): with the Reloaded Online
+    // files copied in there are several executables, and the first one on disk is not the right one.
     private fun findExe(dir: File): File? {
-        val exes = dir.listFiles().orEmpty()
-            .filter { it.isFile && it.extension.equals("exe", ignoreCase = true) }
-            .sortedBy { it.name.lowercase() }
-        return exes.firstOrNull { !it.name.contains("online", ignoreCase = true) } ?: exes.firstOrNull()
-    }
-
-    /**
-     * True for the PC "Reloaded Online" add-on zip: two `.exe`, `ROZ.dll` and a single
-     * `data/text/mundo.txt` (the server address). It passes the "exe + data/" check, so installing
-     * it like a game would replace the whole install with those few files.
-     */
-    private fun isOnlineAddon(plan: ZipPlan): Boolean {
-        val files = plan.items.filter { !it.directory }
-        val dataFiles = files.filter { it.path.startsWith("data/", ignoreCase = true) }
-        return dataFiles.isNotEmpty() &&
-            dataFiles.all { it.path.equals("data/text/mundo.txt", ignoreCase = true) } &&
-            files.any { it.path.equals("ROZ.dll", ignoreCase = true) || it.path.contains("online", ignoreCase = true) }
-    }
-
-    /** Keeps the installed game and takes only the server address from the Online add-on. */
-    private fun installOnlineAddon(zip: File, plan: ZipPlan, log: (String) -> Unit) {
-        if (!looksLikeGame(gameDir)) {
-            error("Este zip es el complemento Reloaded Online. Instala primero el juego base y luego impórtalo.")
+        val online = runCatching {
+            JSONObject(File(dir, "reloaded-online.json").readText()).optBoolean("enabled", false)
+        }.getOrDefault(false)
+        fun rank(f: File): Int {
+            val name = f.name.lowercase()
+            return when {
+                "online" in name && "(compatible)" in name -> if (online) 0 else 2
+                "online" in name -> 3
+                else -> if (online) 1 else 0
+            }
         }
-        val item = plan.items.first { it.path.equals("data/text/mundo.txt", ignoreCase = true) }
-        val target = File(gameDir, "data/text/mundo.txt")
-        target.parentFile?.mkdirs()
-        ZipFile(zip).use { z ->
-            val entry = z.getEntry(item.raw) ?: error("No encuentro mundo.txt dentro del zip.")
-            if (entry.size > 1024) error("mundo.txt es demasiado grande para ser una dirección de servidor.")
-            z.getInputStream(entry).use { input -> target.outputStream().use { input.copyTo(it) } }
-        }
-        log("Complemento Reloaded Online: servidor guardado en data/text/mundo.txt. Los .exe y ROZ.dll de PC no se usan en Android.")
+        return dir.listFiles()
+            ?.filter { it.isFile && it.extension.equals("exe", ignoreCase = true) }
+            ?.sortedWith(compareBy<File>({ rank(it) }, { it.name }))
+            ?.firstOrNull()
     }
 
     /**
@@ -365,7 +368,12 @@ class GameRepository(private val context: Context) {
                         val target = File(data, name)
                         // Only the save folders, and never a path that escapes them.
                         val wanted = saveFolders.any { name.startsWith("$it/") }
-                        val safe = target.canonicalPath.startsWith(data.canonicalPath + File.separator)
+                        val category = name.substringBefore("/")
+                        val permittedRoot = File(data, category).canonicalFile
+                        val privateRoot = context.filesDir.canonicalFile
+                        val safe = wanted &&
+                            permittedRoot.path.startsWith(privateRoot.path + File.separator) &&
+                            target.canonicalPath.startsWith(permittedRoot.path + File.separator)
                         if (!entry.isDirectory && wanted && safe) {
                             target.parentFile?.mkdirs()
                             target.outputStream().use { zip.copyTo(it) }
@@ -420,29 +428,9 @@ class GameRepository(private val context: Context) {
         }
     }
 
-    /**
-     * Puts the Reloaded Online server address straight into the game files
-     * (`data/text/mundo.txt`), the same place the PC add-on uses. It is written only when the
-     * game is installed and the file is missing, so an address the user or an Online add-on zip
-     * already put there is never overwritten.
-     */
-    private fun installBundledOnline() {
-        val data = File(gameDir, "data")
-        if (!data.isDirectory) return
-        val target = File(data, "text/mundo.txt")
-        if (target.isFile) return
-        runCatching {
-            target.parentFile?.mkdirs()
-            context.assets.open("online/mundo.txt").use { input ->
-                target.outputStream().use { output -> input.copyTo(output) }
-            }
-        }
-    }
-
     suspend fun prepare(): Unit = withContext(Dispatchers.IO) {
         recoverInterruptedInstall()
         installBundledMods()
-        installBundledOnline()
         val exe = findExe(gameDir)
         if (exe != null && File(gameDir, "data").isDirectory) {
             // Installs made before the launcher recorded these still need their size and date.
@@ -650,17 +638,13 @@ class GameRepository(private val context: Context) {
         foldZipNamesToAscii(zip)
         val plan = planZip(zip, log)
         log("Zip válido: ${plan.items.count { !it.directory }} archivos, ${formatBytes(plan.totalBytes)} sin comprimir.")
-        if (isOnlineAddon(plan)) {
-            installOnlineAddon(zip, plan, log)
-            return
-        }
 
         // A previous failed attempt can leave a lot in staging, so clear it before measuring the
         // free space it would otherwise hide.
         val staging = File(files, "game.staging")
         if (staging.exists()) {
             log("Limpiando una extracción anterior…")
-            if (!staging.deleteRecursively()) error("No pude limpiar ${staging.absolutePath}.")
+            if (!deleteTreeSafely(staging)) error("No pude limpiar ${staging.absolutePath}.")
         }
 
         // The saves are copied aside during the swap, so their size also has to fit.
@@ -692,7 +676,7 @@ class GameRepository(private val context: Context) {
             log("Verificación correcta.")
 
             log("Conservando partidas y datos del jugador…")
-            if (!saved.deleteRecursively() && saved.exists()) {
+            if (!deleteTreeSafely(saved) && saved.exists()) {
                 error("No pude preparar ${saved.absolutePath}.")
             }
             var kept = 0
@@ -710,7 +694,7 @@ class GameRepository(private val context: Context) {
 
             log("Instalando (reemplazo atómico)…")
             val previous = File(files, "game.old")
-            if (!previous.deleteRecursively() && previous.exists()) {
+            if (!deleteTreeSafely(previous) && previous.exists()) {
                 error("No pude limpiar ${previous.absolutePath}; no he tocado el juego actual.")
             }
             val hadGame = gameDir.isDirectory
@@ -721,17 +705,17 @@ class GameRepository(private val context: Context) {
                 val restored = if (!hadGame) {
                     true
                 } else {
-                    gameDir.deleteRecursively()
+                    deleteTreeSafely(gameDir)
                     previous.renameTo(gameDir)
                 }
-                staging.deleteRecursively()
-                saved.deleteRecursively()
+                deleteTreeSafely(staging)
+                deleteTreeSafely(saved)
                 error(
                     if (restored) "No pude instalar el juego nuevo; se ha restaurado el anterior."
                     else "No pude instalar el juego nuevo ni restaurar el anterior. Reinicia la app.",
                 )
             }
-            if (hadGame && !previous.deleteRecursively() && previous.exists()) {
+            if (hadGame && !deleteTreeSafely(previous) && previous.exists()) {
                 log("Aviso: no pude borrar ${previous.absolutePath}; se limpiará en el próximo arranque.")
             }
             onProgress(98)
@@ -744,7 +728,7 @@ class GameRepository(private val context: Context) {
                 to.mkdirs()
                 runCatching { from.copyRecursively(to, overwrite = false) }
             }
-            saved.deleteRecursively()
+            deleteTreeSafely(saved)
 
             runCatching {
                 metaFile.writeText(
@@ -763,8 +747,8 @@ class GameRepository(private val context: Context) {
             if (e is StorageStalled) {
                 log("El almacenamiento no responde; dejo ${staging.name} para limpiarlo al reiniciar.")
             } else {
-                staging.deleteRecursively()
-                saved.deleteRecursively()
+                deleteTreeSafely(staging)
+                deleteTreeSafely(saved)
             }
             throw e
         }

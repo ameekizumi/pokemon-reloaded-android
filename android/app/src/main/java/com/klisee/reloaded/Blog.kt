@@ -1,4 +1,4 @@
-package com.klisee.reloaded
+package io.reloadedfork.app
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

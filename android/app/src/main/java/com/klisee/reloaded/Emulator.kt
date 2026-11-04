@@ -1,11 +1,11 @@
-package com.klisee.reloaded
+package io.reloadedfork.app
 
 import android.content.Context
 import android.content.Intent
 
 /** Starts the native activity that runs the bundled `libgm8emulator.so`. */
 object Emulator {
-    private const val GAME_ACTIVITY = "com.klisee.reloaded.GameActivity"
+    private const val GAME_ACTIVITY = "io.reloadedfork.app.GameActivity"
 
     fun start(context: Context) {
         // The emulator reads the pad layout and the video mode once, at startup, so they have to be
@@ -23,6 +23,7 @@ object Emulator {
         prefs.writeTouchAppearance(context.filesDir)
         prefs.writeGameLanguage(context.filesDir)
         TouchSprites.writeRuntime(context, prefs.touchSprites)
+        if (prefs.touchAppearance.style == TouchStyle.MODERN_V2) ModernoV2Sprites.prepare(context)
         TouchLabels.writeRuntime(context, context.filesDir)
         context.startActivity(Intent().setClassName(context.packageName, GAME_ACTIVITY))
     }

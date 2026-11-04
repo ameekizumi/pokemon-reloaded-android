@@ -1,4 +1,4 @@
-package com.klisee.reloaded
+package io.reloadedfork.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -6,8 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.klisee.reloaded.ui.ReloadedTheme
-import com.klisee.reloaded.ui.TouchEditorScreen
+import io.reloadedfork.app.ui.ReloadedTheme
+import io.reloadedfork.app.ui.TouchEditorScreen
 
 /** Separate landscape activity: the editor previews the same aspect ratio as the game window. */
 class TouchEditorActivity : ComponentActivity() {

@@ -1,10 +1,10 @@
-package com.klisee.reloaded
+package io.reloadedfork.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.klisee.reloaded.ui.TouchAppearanceScreen
-import com.klisee.reloaded.ui.ReloadedTheme
+import io.reloadedfork.app.ui.TouchAppearanceScreen
+import io.reloadedfork.app.ui.ReloadedTheme
 
 class TouchAppearanceActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,4 +1,4 @@
-package com.klisee.reloaded
+package io.reloadedfork.app
 
 import android.app.NativeActivity
 import android.content.Context
@@ -23,9 +23,9 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.klisee.reloaded.discord.DiscordRpcManager
-import com.klisee.reloaded.discord.DiscordRpcService
-import com.klisee.reloaded.ui.Strings
+import io.reloadedfork.app.discord.DiscordRpcManager
+import io.reloadedfork.app.discord.DiscordRpcService
+import io.reloadedfork.app.ui.Strings
 
 /**
  * The emulator activity: a plain `NativeActivity` (that is what loads `libgm8emulator.so`),
@@ -115,6 +115,7 @@ class GameActivity : NativeActivity() {
         }
         super.onCreate(savedInstanceState)
         instance = this
+        GameSession.active = true
         if (Preferences(applicationContext).keepScreenOn) {
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
@@ -122,7 +123,7 @@ class GameActivity : NativeActivity() {
         DiscordRpcManager.init(applicationContext)
         Preferences(applicationContext).writeGameLanguage(filesDir)
         DiscordRpcManager.setLauncherScreen(null)
-        com.klisee.reloaded.discord.RoomNames.load(applicationContext)
+        io.reloadedfork.app.discord.RoomNames.load(applicationContext)
         if (Preferences(applicationContext).discordEnabled) {
             runCatching { DiscordRpcService.start(applicationContext) }
         }
@@ -133,6 +134,7 @@ class GameActivity : NativeActivity() {
 
     override fun onDestroy() {
         if (instance === this) instance = null
+        GameSession.active = false
         // El motor terminar la actividad es lo que cierra la sesión; pasar a segundo plano no.
         if (isFinishing) runCatching { DiscordRpcService.stop(applicationContext) }
         super.onDestroy()
@@ -286,7 +288,7 @@ class GameActivity : NativeActivity() {
 
         init {
             // These are declared as `native` methods on this class, so the JVM has to find their
-            // `Java_com_klisee_reloaded_GameActivity_*` symbols in the library. The emulator loads
+            // `Java_io_reloadedfork_app_GameActivity_*` symbols in the library. The emulator loads
             // the same one through the manifest, and this only links it to the app's class loader.
             System.loadLibrary("gm8emulator")
         }
@@ -333,8 +335,8 @@ class GameActivity : NativeActivity() {
             val newGameText = if (DiscordRpcManager.isEnglish()) "Starting a new game" else "Iniciando una nueva partida"
             DiscordRpcManager.setRoute(
                 if (newGame) newGameText
-                else (com.klisee.reloaded.discord.RoomNames.display(route) ?: prettyRoute(route))
-                    ?.let { com.klisee.reloaded.discord.RoomNames.clean(it) },
+                else (io.reloadedfork.app.discord.RoomNames.display(route) ?: prettyRoute(route))
+                    ?.let { io.reloadedfork.app.discord.RoomNames.clean(it) },
             )
         }
 

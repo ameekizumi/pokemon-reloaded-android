@@ -1,4 +1,4 @@
-package com.klisee.reloaded
+package io.reloadedfork.app
 
 import android.content.Context
 import android.net.Uri
@@ -9,8 +9,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.compose.runtime.*
-import com.klisee.reloaded.ui.ReloadedTheme
-import com.klisee.reloaded.ui.TouchAssetsScreen
+import io.reloadedfork.app.ui.ReloadedTheme
+import io.reloadedfork.app.ui.TouchAssetsScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

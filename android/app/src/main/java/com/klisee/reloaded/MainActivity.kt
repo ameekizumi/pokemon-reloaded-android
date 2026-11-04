@@ -1,13 +1,13 @@
-package com.klisee.reloaded
+package io.reloadedfork.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.klisee.reloaded.discord.DiscordRpcManager
-import com.klisee.reloaded.ui.App
-import com.klisee.reloaded.ui.ReloadedTheme
-import com.klisee.reloaded.ui.Strings
+import io.reloadedfork.app.discord.DiscordRpcManager
+import io.reloadedfork.app.ui.App
+import io.reloadedfork.app.ui.ReloadedTheme
+import io.reloadedfork.app.ui.Strings
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
