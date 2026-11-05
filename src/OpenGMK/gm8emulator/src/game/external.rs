@@ -1,6 +1,5 @@
 pub mod dll;
 mod dummy;
-pub mod roz;
 pub mod win32;
 mod wow64;
 
@@ -25,7 +24,6 @@ pub enum Call {
     Emulated(Function),
     Native(NativeExternal),
     Ipc(ipc::IpcExternal),
-    Roz(roz::RozFn),
 }
 
 pub struct External {
@@ -36,8 +34,6 @@ pub struct External {
 pub struct ExternalManager {
     externals: Vec<Option<External>>,
     dummy_audio: bool,
-    roz: roz::Roz,
-    roz_used: bool,
 
     native_manager: native::NativeManager,
     ipc_manager: ipc::IpcManager,
@@ -53,32 +49,14 @@ impl ExternalManager {
         Self {
             externals: Vec::new(),
             dummy_audio,
-            roz: roz::Roz::new(),
-            roz_used: false,
             native_manager: native::NativeManager::new(),
             ipc_manager: ipc::IpcManager::new(),
         }
     }
 
-    /// True once the loaded game imports ROZ.dll, i.e. it is the developer's Online build, whose
-    /// own Multijugador menu (with the internet option) must not be replaced by the overlay.
-    pub fn roz_used(&self) -> bool {
-        self.roz_used
-    }
-
     fn make_call(&mut self, signature: &dll::ExternalSignature) -> Result<Call, String> {
         if let Some(dummy) = self.should_dummy(&signature) {
             return Ok(Call::Dummy(dummy))
-        }
-        // ROZ.dll (Reloaded Online) is emulated natively on every platform.
-        let file = Path::new(&signature.dll).file_name().and_then(|o| o.to_str()).unwrap_or(&signature.dll);
-        if file.eq_ignore_ascii_case("roz.dll") {
-            self.roz_used = true;
-            // An export the shim doesn't know returns 0 instead of aborting the game.
-            return Ok(match roz::RozFn::from_symbol(&signature.symbol) {
-                Some(f) => Call::Roz(f),
-                None => Call::Dummy(gml::Value::Real(0.into())),
-            })
         }
         if cfg!(all(target_os = "windows", target_arch = "x86")) {
             Ok(Call::Native(self.native_manager.define(&signature)?))
@@ -115,13 +93,6 @@ impl ExternalManager {
     pub fn call_native(&mut self, id: usize, args: &[dll::Value]) -> gml::Value {
         match &self.externals[id].as_ref().unwrap().call {
             Call::Native(ext) => self.native_manager.call(ext, args).into(),
-            _ => unreachable!(),
-        }
-    }
-
-    pub fn call_roz(&mut self, id: usize, args: &[dll::Value]) -> gml::Value {
-        match &self.externals[id].as_ref().unwrap().call {
-            &Call::Roz(f) => self.roz.call(f, args).into(),
             _ => unreachable!(),
         }
     }
