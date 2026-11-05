@@ -1121,10 +1121,11 @@ fn load_skin(gl: &gl::Gl) -> (GLuint, [Option<SkinSlot>; MAX_SKIN_SLOTS]) {
     let dir = crate::android_main::storage_dir().to_string_lossy().into_owned();
     let mut images: Vec<(&'static str, image::RgbaImage, bool, u8, bool)> = Vec::new();
     // Moderno V2 keeps its bundled artwork in `moderno-v2/`; any file it lacks falls back to Moderno's.
+    let v2_found = std::cell::Cell::new(0u32);
     let art = |file: &str| -> String {
         if crate::touch_appearance::modern_v2() {
             let v2 = format!("{}/moderno-v2/{}", dir, file);
-            if std::path::Path::new(&v2).is_file() { return v2 }
+            if std::path::Path::new(&v2).is_file() { v2_found.set(v2_found.get() + 1); return v2 }
         }
         format!("{}/{}", dir, file)
     };
@@ -1173,6 +1174,10 @@ fn load_skin(gl: &gl::Gl) -> (GLuint, [Option<SkinSlot>; MAX_SKIN_SLOTS]) {
                 images.push((name,img,custom,context,true));
             }else if original{images.push((name,image::RgbaImage::new(1,1),false,context,false));}
         }
+    }
+    if crate::touch_appearance::modern_v2() {
+        eprintln!("[overlay] Moderno V2: {} sprites leidos de moderno-v2/ ({})", v2_found.get(),
+            if v2_found.get() == 0 { "ninguno: importa el paquete V2 en Apariencia; se usa Moderno" } else { "ok" });
     }
     images.sort_by_key(|(_,img,_,_,_)|std::cmp::Reverse(img.height()));
     if images.is_empty() {
