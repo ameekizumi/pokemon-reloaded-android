@@ -234,8 +234,7 @@ fun App(
                         onAbout = { pushed = Pushed.About },
                         onReloadedOnline = { pushed = Pushed.ReloadedOnline },
                         onLaunch = {
-                            // "Jugar" is the plain game: no emulator multiplayer (the Online exe
-                            // handles the internet through ROZ.dll).
+                            // "Jugar" is the plain game: no emulator multiplayer overlay.
                             repo.setEmulatorMultiplayer(false)
                             launching = true
                             DiscordRpcManager.setLauncherScreen(null)

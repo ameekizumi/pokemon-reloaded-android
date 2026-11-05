@@ -188,8 +188,8 @@ fun ControlsScreen(prefs: Preferences, filesDir: File, onBack: () -> Unit) {
                         icon = Icons.Filled.SportsEsports,
                         title = "Tecla ${action.key}",
                         subtitle = listOfNotNull(
-                            buttonName(code),
-                            action.hint.takeIf { it.isNotEmpty() },
+                            Strings.tr(buttonName(code)),
+                            action.hint.takeIf { it.isNotEmpty() }?.let { Strings.tr(it) },
                         ).joinToString(" - "),
                         items = ControlAction.entries.size,
                         index = index,

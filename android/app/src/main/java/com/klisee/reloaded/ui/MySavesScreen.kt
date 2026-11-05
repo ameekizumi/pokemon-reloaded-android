@@ -104,7 +104,7 @@ fun MySavesScreen(repo: GameRepository, onBack: () -> Unit) {
                 onFailure = { error -> "No se pudo exportar: " + (error.message ?: "error") }
             )
             busy = false
-            snackbar.showSnackbar(result)
+            snackbar.showSnackbarTr(result)
         }
     }
     val importPicker = rememberLauncherForActivityResult(
@@ -116,7 +116,7 @@ fun MySavesScreen(repo: GameRepository, onBack: () -> Unit) {
             busy = true
             val result = profileSaves.importArchive(selection.first, uri, selection.second)
             busy = false
-            snackbar.showSnackbar(result.fold(
+            snackbar.showSnackbarTr(result.fold(
                 onSuccess = { "Importado en " + selection.first.label + ": " + it + " archivos. Se creó un respaldo del perfil anterior." },
                 onFailure = { "No se pudo importar: " + (it.message ?: "error") }
             ))
@@ -142,7 +142,7 @@ fun MySavesScreen(repo: GameRepository, onBack: () -> Unit) {
                         busy = true
                         val result = profileSaves.delete(request.first, request.second)
                         busy = false
-                        snackbar.showSnackbar(result.fold(
+                        snackbar.showSnackbarTr(result.fold(
                             { "Slot eliminado en " + request.first.label + "." },
                             { "No se pudo borrar: " + (it.message ?: "error") }
                         ))

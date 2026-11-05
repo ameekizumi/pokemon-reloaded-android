@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.reloadedfork.app.Preferences
+import androidx.compose.material3.SnackbarHostState
 import org.json.JSONObject
 
 /**
@@ -57,7 +58,21 @@ object Strings {
                 if (text.length > k.length && text.startsWith(k)) { out = v + text.substring(k.length); break }
             }
         }
+        if (out == text) {
+            // Composite text ("A - Interactuar y confirmar", "De X\nDescripción"): translate each piece.
+            val sep = if ('\n' in text) "\n" else if (" - " in text) " - " else null
+            if (sep != null) {
+                val parts = text.split(sep)
+                if (parts.size > 1) {
+                    val done = parts.map { tr(it) }
+                    if (done != parts) out = done.joinToString(sep)
+                }
+            }
+        }
         cache[text] = out
         return out
     }
 }
+
+/** Snackbar message through the UI translation. */
+suspend fun SnackbarHostState.showSnackbarTr(message: String) = showSnackbar(Strings.tr(message))

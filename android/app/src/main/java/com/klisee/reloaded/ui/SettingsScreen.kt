@@ -178,9 +178,9 @@ fun SettingsScreen(
                         result.fold(
                             onSuccess = { found ->
                                 if (found != null) onUpdateFound(found)
-                                else snackbar.showSnackbar(Strings.tr("No hay actualizaciones disponibles."))
+                                else snackbar.showSnackbarTr(Strings.tr("No hay actualizaciones disponibles."))
                             },
-                            onFailure = { snackbar.showSnackbar(Strings.tr("No se pudo comprobar la actualización. Inténtalo de nuevo.")) },
+                            onFailure = { snackbar.showSnackbarTr(Strings.tr("No se pudo comprobar la actualización. Inténtalo de nuevo.")) },
                         )
                     }
                 })

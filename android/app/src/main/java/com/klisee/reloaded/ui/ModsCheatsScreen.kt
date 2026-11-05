@@ -25,7 +25,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -75,7 +74,7 @@ fun ModsCheatsScreen(repo: GameRepository, onBack: () -> Unit) {
         val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE)
             as android.content.ClipboardManager
         clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Pokémon Reloaded F3",code))
-        scope.launch { snackbar.showSnackbar(message) }
+        scope.launch { snackbar.showSnackbarTr(message) }
     }
 
     restoring?.let { backup ->
@@ -91,7 +90,7 @@ fun ModsCheatsScreen(repo: GameRepository, onBack: () -> Unit) {
                         val result = mods.restoreBackup(repo, backup)
                         busy = false
                         backups = mods.backups()
-                        snackbar.showSnackbar(result.fold(
+                        snackbar.showSnackbarTr(result.fold(
                             { "Respaldo restaurado. Reiniciá el juego para cargarlo." },
                             { "No se pudo restaurar: " + (it.message ?: "error") },
                         ))
@@ -152,7 +151,7 @@ fun ModsCheatsScreen(repo: GameRepository, onBack: () -> Unit) {
                         runCatching { mods.showOfficialF3 = checked }
                             .onSuccess { officialF3 = checked }
                             .onFailure { error ->
-                                scope.launch { snackbar.showSnackbar("No se pudo guardar: " + error.message) }
+                                scope.launch { snackbar.showSnackbarTr("No se pudo guardar: " + error.message) }
                             }
                     },
                 )
@@ -182,7 +181,7 @@ fun ModsCheatsScreen(repo: GameRepository, onBack: () -> Unit) {
                         runCatching { mods.modMode = enabled }
                             .onSuccess { isolatedMode = enabled }
                             .onFailure { error ->
-                                scope.launch { snackbar.showSnackbar(error.message ?: "No se pudo cambiar de modo") }
+                                scope.launch { snackbar.showSnackbarTr(error.message ?: "No se pudo cambiar de modo") }
                             }
                     },
                 )
@@ -469,7 +468,7 @@ fun ModsCheatsScreen(repo: GameRepository, onBack: () -> Unit) {
                         val result = mods.createBackup(repo)
                         busy = false
                         backups = mods.backups()
-                        snackbar.showSnackbar(result.fold(
+                        snackbar.showSnackbarTr(result.fold(
                             { "Respaldo guardado: " + it.name },
                             { "No se pudo respaldar: " + (it.message ?: "error") },
                         ))

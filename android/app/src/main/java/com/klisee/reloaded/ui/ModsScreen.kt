@@ -18,7 +18,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -55,10 +54,10 @@ private fun subtitleFor(entry: ModEntry): String {
     val author = entry.author.ifBlank { bundled?.first.orEmpty() }
     val description = entry.description.ifBlank { bundled?.second.orEmpty() }
     return buildString {
-        if (author.isNotBlank()) append("De ").append(author)
+        if (author.isNotBlank()) append(Strings.tr("De ")).append(author)
         if (description.isNotBlank()) {
             if (isNotEmpty()) append('\n')
-            append(description)
+            append(Strings.tr(description))
         }
         if (isEmpty()) append(entry.id)
     }

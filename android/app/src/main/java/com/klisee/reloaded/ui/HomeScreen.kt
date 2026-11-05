@@ -129,7 +129,7 @@ fun HomeScreen(
             busy = false
             progress = null
             status = repo.status()
-            snackbar.showSnackbar(
+            snackbar.showSnackbarTr(
                 result.fold(
                     {
                         if (hadGame) "Juego actualizado. Tus partidas se conservaron." else "Juego instalado."
