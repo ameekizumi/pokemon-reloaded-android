@@ -1788,16 +1788,27 @@ fn find_exe(dir: &Path) -> Option<PathBuf> {
     // off. Rank them instead: the original game, unless online mode is enabled in the launcher,
     // in which case the 30 FPS "(compatible)" build. The 60 FPS "Online.exe" is a last resort
     // because it needs a newer OpenGL than the emulator provides.
+    let overlay = fs::read_to_string(dir.join("reloaded-online.json"))
+        .map(|text| text.replace(' ', "").contains("\"enabled\":true"))
+        .unwrap_or(false);
     let rank = |path: &PathBuf| -> u8 {
         let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("").to_lowercase();
         match (name.contains("online"), name.contains("(compatible)")) {
-            (true, true) => 0, // developer's Online build wins whenever present
+            // "Jugar": the developer's Online build (ROZ.dll, internet). "Reloaded Online": the
+            // original exe plus the emulator's own multiplayer.
+            (true, true) => if overlay { 2 } else { 0 },
             (true, false) => 3,
-            _ => 1,
+            _ => if overlay { 0 } else { 1 },
         }
     };
     found.sort_by(|a, b| rank(a).cmp(&rank(b)).then_with(|| a.cmp(b)));
-    found.into_iter().next()
+    let chosen = found.into_iter().next();
+    let is_online = chosen
+        .as_ref()
+        .and_then(|p| p.file_name().and_then(|n| n.to_str()))
+        .is_some_and(|n| n.to_lowercase().contains("online"));
+    crate::reloaded_online::MOD_ONLINE_EXE.store(is_online, std::sync::atomic::Ordering::Relaxed);
+    chosen
 }
 
 fn logf(msg: &str) {

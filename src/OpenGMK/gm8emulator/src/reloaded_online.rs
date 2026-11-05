@@ -20,6 +20,10 @@ use std::{
     time::{Duration, Instant},
 };
 
+/// Set by the launcher glue when the running exe is the developer's Online build (it talks to the
+/// internet server itself through ROZ.dll). Then the emulator's own multiplayer overlay stays off.
+pub static MOD_ONLINE_EXE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
 #[derive(Clone, Debug, Deserialize)]
 struct ReloadedOnlineConfig {
     #[serde(default)]
@@ -87,6 +91,7 @@ pub struct IncomingResponse {
 }
 
 pub struct ReloadedOnline {
+    overlay: bool,
     connection: Option<Connection>,
     remotes: HashMap<u64, Remote>,
     local_id: Option<u64>,
@@ -107,6 +112,7 @@ pub struct ReloadedOnline {
 impl Default for ReloadedOnline {
     fn default() -> Self {
         Self {
+            overlay: false,
             connection: None,
             remotes: HashMap::new(),
             local_id: None,
@@ -140,16 +146,22 @@ impl ReloadedOnline {
                 return online
             },
         };
+        online.overlay = config.enabled && !MOD_ONLINE_EXE.load(std::sync::atomic::Ordering::Relaxed);
         online.local_name = config.name.clone();
         online.server = config.server.clone();
         online.room_name = config.room.clone();
         online.bridge_upstream = config.bridge_upstream.clone();
         // A bridge configured from the launcher must not connect at startup: the in-game
         // Multijugador menu owns that connection and starts it only when the player picks it.
-        if config.enabled && config.bridge_upstream.trim().is_empty() {
+        if online.overlay && config.bridge_upstream.trim().is_empty() {
             online.connect(false);
         }
         online
+    }
+
+    /// The emulator's own Multijugador overlay is only offered in "Reloaded Online" mode.
+    pub fn overlay_enabled(&self) -> bool {
+        self.overlay
     }
 
     pub fn is_active(&self) -> bool {
