@@ -837,7 +837,10 @@ pub fn current_context() -> u8 {
         // are cutscenes the player watches before they can take a step, so nothing of the map's
         // overlay belongs over them. Their dialogues still get their own button, handled above.
         // Confirmed on the device - the two report as rooms 528 and 527.
-        22 | 30 | 43 | 461 | 465 | 466 | 527 | 528 => MENU,
+        // Main menu (30) and the multiplayer / online menus (461, 465, 466) are walked with the
+        // arrows and confirmed with Z / cancelled with X, so they get the joystick and those buttons.
+        30 | 461 | 465 | 466 => CHOICE,
+        22 | 43 | 527 | 528 => MENU,
         // The screen where a new game asks you to pick your character, just after the title menu. It
         // has controls of its own (the two arrows) instead of the map's. Its room cannot be named
         // from the game's data - the names are not readable - so this is the room it reports.
