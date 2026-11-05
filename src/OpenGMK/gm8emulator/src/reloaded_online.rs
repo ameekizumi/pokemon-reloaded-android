@@ -20,10 +20,6 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// Set by the launcher glue when the running exe is the developer's Online build (it talks to the
-/// internet server itself through ROZ.dll). Then the emulator's own multiplayer overlay stays off.
-pub static MOD_ONLINE_EXE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
-
 #[derive(Clone, Debug, Deserialize)]
 struct ReloadedOnlineConfig {
     #[serde(default)]
@@ -146,7 +142,7 @@ impl ReloadedOnline {
                 return online
             },
         };
-        online.overlay = config.enabled && !MOD_ONLINE_EXE.load(std::sync::atomic::Ordering::Relaxed);
+        online.overlay = config.enabled;
         online.local_name = config.name.clone();
         online.server = config.server.clone();
         online.room_name = config.room.clone();

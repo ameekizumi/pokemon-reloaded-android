@@ -2380,7 +2380,6 @@ impl Game {
         }
         if self.play_type == PlayType::Normal
             && self.reloaded_online.overlay_enabled()
-            && !self.externals.roz_used()
             && self.room.id == 30
             && !self.online_menu_open
             && !self.online_menu_ignore_trigger
@@ -3544,10 +3543,6 @@ impl Game {
             match &external.call {
                 external::Call::Dummy(x) => Ok(x.clone()),
                 &external::Call::Emulated(func) => func.invoke(self, context, args),
-                external::Call::Roz(_) => {
-                    let args = convert_args();
-                    Ok(self.externals.call_roz(id as _, &args))
-                },
                 external::Call::Native(_) => {
                     let args = convert_args();
                     Ok(self.externals.call_native(id as _, &args).into())
