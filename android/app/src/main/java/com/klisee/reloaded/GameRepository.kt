@@ -191,17 +191,13 @@ class GameRepository(private val context: Context) {
     // Same ranking as the native side (android_main.rs `find_exe`): with the Reloaded Online
     // files copied in there are several executables, and the first one on disk is not the right one.
     private fun findExe(dir: File): File? {
-        // "Jugar" (enabled=false): the developer's Online build (ROZ.dll, internet).
-        // "Reloaded Online" (enabled=true): the original exe + the emulator's own multiplayer.
-        val overlay = runCatching {
-            JSONObject(File(dir, "reloaded-online.json").readText()).optBoolean("enabled", false)
-        }.getOrDefault(false)
+        // The developer's Online build (ROZ.dll) is not supported: the original exe always wins.
         fun rank(f: File): Int {
             val name = f.name.lowercase()
             return when {
-                "online" in name && "(compatible)" in name -> if (overlay) 2 else 0
+                "online" in name && "(compatible)" in name -> 2
                 "online" in name -> 3
-                else -> if (overlay) 0 else 1
+                else -> 0
             }
         }
         return dir.listFiles()
@@ -648,19 +644,11 @@ class GameRepository(private val context: Context) {
         val plan = planZip(zip, log)
         log("Zip válido: ${plan.items.count { !it.directory }} archivos, ${formatBytes(plan.totalBytes)} sin comprimir.")
 
-        // Reloaded Online add-on (.exe + ROZ.dll + data/text/mundo.txt): it carries no game data, so
-        // it is merged into the installed game instead of replacing it (which used to wipe the
-        // game and leave only mundo.txt). Saves are never touched.
-        val dataFiles = plan.items.count { !it.directory && it.path.startsWith("data/") }
-        if (dataFiles < 5 && gameDir.isDirectory && File(gameDir, "data").isDirectory &&
-            plan.items.any { !it.directory && it.path.endsWith(".exe", ignoreCase = true) }
-        ) {
-            log("Complemento Online detectado: se añade al juego instalado sin reemplazarlo.")
-            val addon = ZipPlan(
-                plan.items.filter { item -> saveFolders.none { item.path.startsWith("data/$it/") } },
-                plan.totalBytes,
-            )
-            extractZip(zip, addon, gameDir, onProgress, log)
+        // Safety: a ZIP with almost no game data (e.g. the Reloaded Online add-on: .exe + ROZ.dll +
+        // mundo.txt) must never replace an installed game, which would leave only that one file.
+        val dataFiles = plan.items.count { !it.directory && it.path.contains("data/") }
+        if (dataFiles < 5 && File(gameDir, "data").isDirectory) {
+            log("El ZIP no trae el juego completo (complemento Online): se ignora para no reemplazar el juego instalado.")
             onProgress(100)
             return
         }
