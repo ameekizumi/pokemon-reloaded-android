@@ -2761,15 +2761,23 @@ impl Game {
             let (x1, y1, x2, y2) = self.mods_menu_row(index);
             if x >= x1 && x <= x2 && y >= y1 && y <= y2 {
                 let name = line.split("  [").next().unwrap_or("").trim().to_ascii_lowercase();
-                let id = if name == "crt" {
-                    Some("crt")
-                } else if name == "game boy" || name == "gb" {
-                    Some("gb")
-                } else {
-                    None
-                };
+                // `mods/menu.ids` holds the folder id behind each row, so every installed mod can be
+                // switched here, not only the bundled CRT / Game Boy ones.
+                let from_ids = std::fs::read_to_string(root.join("mods/menu.ids"))
+                    .ok()
+                    .and_then(|ids| ids.lines().nth(index).map(|id| id.trim().to_string()))
+                    .filter(|id| !id.is_empty());
+                let id = from_ids.or_else(|| {
+                    if name == "crt" {
+                        Some("crt".to_string())
+                    } else if name == "game boy" || name == "gb" {
+                        Some("gb".to_string())
+                    } else {
+                        None
+                    }
+                });
                 if let Some(id) = id {
-                    self.toggle_mod(&root, id);
+                    self.toggle_mod(&root, &id);
                 }
                 return;
             }
