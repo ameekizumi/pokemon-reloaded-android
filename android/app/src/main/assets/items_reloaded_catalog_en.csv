@@ -1,0 +1,821 @@
+1|Poké Ball
+2|Great Ball
+3|Ultra Ball
+4|Master Ball
+5|Safari Ball
+6|Premier Ball
+7|Net Ball
+8|Dive Ball
+9|Timer Ball
+10|Luxury Ball
+11|Nest Ball
+12|Repeat Ball
+13|Star Ball
+14|GS Ball
+15|Potion
+16|Super Potion
+17|Hyper Potion
+18|Max Potion
+19|Full Restore
+20|Full Heal
+21|Revive
+22|Max Revive
+23|Fresh Water
+24|Soda Pop
+25|Lemonade
+26|Moomoo Milk
+27|Antidote
+28|Burn Heal
+29|Ice Heal
+30|Awakening
+31|Paralyze Heal
+32|HP Up
+33|Calcium
+34|Iron
+35|Carbos
+36|Protein
+37|Zinc
+38|Rare Candy
+39|Repel
+40|Super Repel
+41|Max Repel
+42|Escape Rope
+43|Sun Stone
+44|Moon Stone
+45|Fire Stone
+46|Thunder Stone
+47|Water Stone
+48|Leaf Stone
+49|Shiny Stone
+50|Dusk Stone
+51|Dawn Stone
+52|Oval Stone
+53|King's Rock
+54|Ice Stone
+55|Reaper Cloth
+56|Razor Claw
+57|Razor Fang
+58|Twisted Spoon
+59|Black Belt
+60|Hard Stone
+61|Spell Tag
+62|Metal Coat
+63|Electirizer
+64|Magmarizer
+65|Protector
+66|Upgrade
+67|Dubious Disc
+68|Deep Sea Tooth
+69|Deep Sea Scale
+70|Dragon Scale
+71|Sacred Ash
+72|Old Amber
+73|Helix Fossil
+74|Dome Fossil
+75|Root Fossil
+76|Claw Fossil
+77|Armor Fossil
+78|Skull Fossil
+79|Pearl
+80|Big Pearl
+81|Nugget
+82|Sapphire
+83|Ruby
+84|Emerald
+85|Star Piece
+86|Stardust
+87|Rare Bone
+88|Tiny Mushroom
+89|Big Mushroom
+90|Everstone
+91|Blank Plate
+92|Flame Plate
+93|Splash Plate
+94|Meadow Plate
+95|Zap Plate
+96|Stone Plate
+97|Fist Plate
+98|Earth Plate
+99|Mind Plate
+100|Toxic Plate
+101|Insect Plate
+102|Icicle Plate
+103|Dread Plate
+104|Iron Plate
+105|Sky Plate
+106|Spooky Plate
+107|Draco Plate
+108|Forbidden Plate
+109|Cheri Berry
+110|Chesto Berry
+111|Pecha Berry
+112|Rawst Berry
+113|Aspear Berry
+114|Leppa Berry
+115|Oran Berry
+116|Persim Berry
+117|Lum Berry
+118|Sitrus Berry
+119|Figy Berry
+120|Wiki Berry
+121|Mago Berry
+122|Aguav Berry
+123|Iapapa Berry
+124|Razz Berry
+125|Bluk Berry
+126|Nanab Berry
+127|Wepear Berry
+128|Pinap Berry
+129|Pomeg Berry
+130|Kelpsy Berry
+131|Qualot Berry
+132|Hondew Berry
+133|Grepa Berry
+134|Tamato Berry
+135|Cornn Berry
+136|Magost Berry
+137|Rabuta Berry
+138|Nomel Berry
+139|Spelon Berry
+140|Pamtre Berry
+141|Watmel Berry
+142|Durin Berry
+143|Belue Berry
+144|Liechi Berry
+145|Ganlon Berry
+146|Salac Berry
+147|Petaya Berry
+148|Apicot Berry
+149|Lansat Berry
+150|Starf Berry
+151|Enigma Berry
+152|Silver Wing
+153|Rainbow Wing
+154|Lunar Feather
+155|Lustrous Orb
+156|Adamant Orb
+157|Griseous Orb
+158|Gracidea
+159|Magma Stone
+160|Blue Orb
+161|Red Orb
+162|Green Orb
+163|Exp. Share
+164|Amulet Coin
+165|Electric Ring
+166|GPS
+167|Requiem Key
+168|Wailmer Pail
+169|Coin Case
+170|Hidden Package
+171|Special Herb
+172|Knife
+173|Axe
+174|Bow
+175|Azure Flute
+176|SmartPhone
+177|Central Key
+178|Matarile Key
+179|Rocket Key
+180|Exp. Inhibitor
+181|Old Rod
+182|Good Rod
+183|Super Rod
+184|Bicycle
+185|xPod Star
+186|Map
+187|Poké Flute
+188|Mystery Pass
+189|Sun Pass
+190|Dark Pass
+191|Jungle Pass
+192|Frontier Pass
+193|Mega Ring
+194|HM1 Cut
+195|HM2 Fly
+196|HM3 Surf
+197|HM4 Strength
+198|HM5 Flash
+199|HM6 Rock Smash
+200|HM7 Dive
+201|TM1 Teleport
+202|TM2 Dynamic Punch
+203|TM3 Dragon Claw
+204|TM4 Safeguard
+205|TM5 Substitute
+206|TM6 Toxic
+207|TM7 Sludge Bomb
+208|TM8 Iron Tail
+209|TM9 Sandstorm
+210|TM10 Sunny Day
+211|TM11 Rain Dance
+212|TM12 Hail
+213|TM13 Hidden Power
+214|TM14 Double Team
+215|TM15 Hyper Beam
+216|TM16 Dig
+217|TM17 Earthquake
+218|TM18 Protect
+219|TM19 Shock Wave
+220|TM20 Focus Blast
+221|TM21 Aerial Ace
+222|TM22 Silver Wind
+223|TM23 Dragon Pulse
+224|TM24 Thunder Wave
+225|TM25 Thunderbolt
+226|TM26 Thunder
+227|TM27 Ice Beam
+228|TM28 Blizzard
+229|TM29 Psychic
+230|TM30 Shadow Ball
+231|TM31 Flamethrower
+232|TM32 Fire Blast
+233|TM33 Giga Drain
+234|TM34 Solar Beam
+235|TM35 Rock Tomb
+236|TM36 Rock Slide
+237|TM37 Dark Pulse
+238|TM38 Poison Jab
+239|TM39 Giga Impact
+240|TM40 Water Pulse
+241|TM41 Explosion
+242|TM42 X-Scissor
+243|TM43 Rest
+244|TM44 False Swipe
+245|TM45 Secret Power
+246|TM46 Extreme Speed
+247|TM47 Whirlwind
+248|TM48 Waterfall
+249|TM49 Lava Plume
+250|TM50 Rock Climb
+251|TM51 Metronome
+252|TM52 Mimic
+253|TM53 Sweet Scent
+254|TM54 Dragon Breath
+255|TM55 Thunder Punch
+256|TM56 Fire Punch
+257|TM57 Ice Punch
+258|TM58 Drain Punch
+259|TM59 Roost
+260|TM60 Brine
+261|TM61 Mirror Shot
+262|TM62 Stone Edge
+263|TM63 Energy Ball
+264|TM64 Attract
+265|TM65 Breath Cannon
+266|TM66 Switcheroo
+267|TM67 Brick Break
+268|TM68 Swagger
+269|TM69 Thief
+270|TM70 Foresight
+271|TM71 Zap Cannon
+272|TM72 Light Screen
+273|TM73 Reflect
+274|TM74 Magnet Rise
+275|TM75 Trick Room
+276|TM76 Psyshock
+277|TM77 Toxic Spikes
+278|TM78 Smack Down
+279|TM79 Bulldoze
+280|TM80 Scald
+281|TM81 U-turn
+282|TM82 Acrobatics
+283|TM83 Retaliate
+284|TM84 Endure
+285|TM85 Quash
+286|TM86 Dragon Tail
+287|TM87 Screech
+288|TM88 Calm Mind
+289|TM89 Frost Breath
+290|TM90 Wild Charge
+291|Antibiotic
+292|Anti-Love
+293|Curse Cure
+294|Max Elixir
+295|X Attack
+296|X Defense
+297|X Speed
+298|X Accuracy
+299|X Special
+300|X Sp. Def
+301|Guard Spec.
+302|Special Guard
+303|Leftovers
+304|Shell Bell
+305|Black Sludge
+306|Big Nugget
+307|String of Pearls
+308|Balm Mushroom
+309|Comet Shard
+310|Silk Scarf
+311|Charcoal
+312|Mystic Water
+313|Miracle Seed
+314|Magnet
+315|Soft Sand
+316|Silver Powder
+317|Poison Barb
+318|Never-Melt Ice
+319|Sunglasses
+320|Sharp Beak
+321|Dragon Fang
+322|Mineral Stone
+323|Magic Rock
+324|Weights
+325|Ninja Headband
+326|Spear
+327|Beauty Scale
+328|Plume Fossil
+329|Cover Fossil
+330|Light Ball
+331|Aura Ball
+332|Eon Ball
+333|Grass Ball
+334|Fire Ball
+335|Water Ball
+336|Ancient Cape
+337|Special Armor
+338|Light Orb
+339|Dark Orb
+340|God Stone
+341|Burn Drive
+342|Douse Drive
+343|Shock Drive
+344|Chill Drive
+345|Rainbow Charm
+346|Lucky Egg
+347|Honey
+348|Eviolite
+349|Flame Orb
+350|Toxic Orb
+351|Toxic Star
+352|Binding Band
+353|Focus Band
+354|Target
+355|Iron Ball
+356|Eject Button
+357|Rocky Helmet
+358|Choice Band
+359|Expert Belt
+360|Focus Sash
+361|Wise Glasses
+362|Choice Specs
+363|Quick Claw
+364|Crazy Gene
+365|Destiny Knot
+366|Black Ribbon
+367|Choice Scarf
+368|Scope Lens
+369|Battery
+370|Big Root
+371|Light Clay
+372|Heat Rock
+373|Icy Rock
+374|Damp Rock
+375|Smooth Rock
+376|Telescope
+377|Life Orb
+378|Conduct Bracer
+379|Justice Bracer
+380|Spirit Bracer
+381|Earthen Bracer
+382|Celestial Bracer
+383|Corrosive Bracer
+384|Normal Gem
+385|Fire Gem
+386|Water Gem
+387|Grass Gem
+388|Electric Gem
+389|Rock Gem
+390|Fighting Gem
+391|Ground Gem
+392|Psychic Gem
+393|Poison Gem
+394|Bug Gem
+395|Ice Gem
+396|Dark Gem
+397|Steel Gem
+398|Flying Gem
+399|Ghost Gem
+400|Dragon Gem
+401|Power Weight
+402|Power Bracer
+403|Power Belt
+404|Power Lens
+405|Power Band
+406|Power Anklet
+407|Reveal Glass
+408|Mewtwoite X
+409|Mewtwoite Y
+410|Pixie Plate
+411|Magic Wand
+412|Fairy Stone
+413|Fairy Gem
+414|Ampharosite
+415|Venusaurite
+416|Charizardite X
+417|Charizardite Y
+418|Blastoisite
+419|Pikabluite
+420|Lucarite
+421|Blazikenite
+422|Gardevoirite
+423|Absolite
+424|Mawilite
+425|Abomasnowite
+426|Aerodactylite
+427|Aggronite
+428|Alakazamite
+429|Banettite
+430|Garchompite
+431|Gengarite
+432|Gyaradosite
+433|Heracrossite
+434|Houndoomite
+435|Kangaskhanite
+436|Manectricite
+437|Medichamite
+438|Pinsirite
+439|Scizorite
+440|Tyranitarite
+441|Magic Bracer
+442|Dark Prism
+443|Primary Prism
+444|Latiasite
+445|Latiosite
+446|Sceptilite
+447|Swampertite
+448|Sableynite
+449|Diancite
+450|Red Prism
+451|Blue Prism
+452|Slowbronite
+453|Metagrossite
+454|Salamencite
+455|Audinite
+456|Galladite
+457|Beedrillite
+458|Pidgeotite
+459|Steelixite
+460|Glalite
+461|Sharpedonite
+462|Cameruptite
+463|Altarianite
+464|Lopunnite
+465|Sweet Scent Sachet
+466|Whipped Dream
+467|Rare Statue
+468|Sail Fossil
+469|Jaw Fossil
+470|Punishment Vase
+471|Hypnotic Crown
+472|Fast Ball
+473|Level Ball
+474|Lure Ball
+475|Heavy Ball
+476|Love Ball
+477|Friend Ball
+478|Moon Ball
+479|Heal Ball
+480|Dusk Ball
+481|Quick Ball
+482|Cherish Ball
+483|Black Ball
+484|Notebook
+485|Necrozma Sun
+486|Necrozma Moon
+487|Ultranecrozium Z
+488|Normalium Z
+489|Firium Z
+490|Waterium Z
+491|Grassium Z
+492|Electrium Z
+493|Rockium Z
+494|Fightinium Z
+495|Groundium Z
+496|Psychium Z
+497|Poisonium Z
+498|Buginium Z
+499|Icium Z
+500|Darkinium Z
+501|Steelium Z
+502|Flyinium Z
+503|Ghostium Z
+504|Dragonium Z
+505|Fairium Z
+506|Pikanium Z
+507|Pikashunium Z
+508|Aloraichium Z
+509|Eevium Z
+510|Snorlium Z
+511|Mewnium Z
+512|Decidium Z
+513|Inciniumz Z
+514|Primarium Z
+515|Tapunium Z
+516|Marshadium Z
+517|Kommonium Z
+518|Lycanium Z
+519|Solganium Z
+520|Lunalium Z
+521|Mimikium Z
+522|Beast Ball
+523|Oval Charm
+524|Copper Royal
+525|Silver Royal
+526|Gold Royal
+527|Amphora
+528|Silver Bracelet
+529|Ancient Effigy
+530|Ancient Crown
+531|Zygarde Cube
+532|Snowball
+533|Tuber
+534|Glittering Moss
+535|Ability Capsule
+536|Lock Capsule
+537|Gold Badge
+538|Silver Badge
+539|Assault Vest
+540|Thick Club
+541|Soothe Bell
+542|Air Balloon
+543|Leek
+544|Quick Powder
+545|Shine Powder
+546|Metal Powder
+547|Healing Powder
+548|Energy Powder
+549|Energy Root
+550|Revival Herb
+551|Yellow Nectar
+552|Red Nectar
+553|Pink Nectar
+554|Purple Nectar
+555|Yellow Flute
+556|Blue Flute
+557|Red Flute
+558|Green Flute
+559|Purple Flute
+560|White Flute
+561|Black Flute
+562|Sun Flute
+563|Moon Flute
+564|White Herb
+565|Unique Herb
+566|Mental Herb
+567|Suitcase
+568|Super Z-Ring
+569|Shed Shell
+570|Protective Pads
+571|Lucky Punch
+572|Shoal Salt
+573|Weakness Policy
+574|Misty Seed
+575|Electric Seed
+576|Grassy Seed
+577|Psychic Seed
+578|Talisman
+579|Tea
+580|Berry Juice
+581|Discount Coupon
+582|Energy Bar Plus
+583|Shoal Shell
+584|Red Card
+585|Plasma Card
+586|Health Feather
+587|Muscle Feather
+588|Resist Feather
+589|Genius Feather
+590|Clever Feather
+591|Swift Feather
+592|Pretty Feather
+593|Floor Cover
+594|Grip Claw
+595|Rage Candy
+596|Lava Cookie
+597|Ice Cream
+598|Shalour Crepe
+599|Lumiose Galette
+600|Big Malasada
+601|Desert Stone
+602|Bug Stone
+603|Sky Stone
+604|Venus Stone
+605|Mars Stone
+606|Metal Stone
+607|Green Cable
+608|Blue Cable
+609|Purple Cable
+610|Red Cable
+611|Yellow Cable
+612|Emerald Scepter
+613|Ruby Scepter
+614|Sapphire Scepter
+615|Bronze Scepter
+616|Silver Scepter
+617|Golden Scepter
+618|TM91 Steel Wing
+619|TM92 Dazzling Gleam
+620|TM93 Grass Knot
+621|TM94 Swords Dance
+622|TM95 Gyro Ball
+623|TM96 Play Rough
+624|TM97 Knock Off
+625|TM98 Payback
+626|TM99 Outrage
+627|TM100 Moonblast
+628|TM101 Shadow Punch
+629|TM102 Hydro Pump
+630|TM103 Draining Kiss
+631|TM104 Power Gem
+632|TM105 Hurricane
+633|TM106 Brave Bird
+634|TM107 Trick
+635|TM108 Crunch
+636|TM109 Bug Buzz
+637|TM110 Megahorn
+638|Star Earring
+639|Ancestral Vase
+640|Secret Scroll
+641|Cursed Ring
+642|Tart Apple
+643|Sweet Apple
+644|Cracked Pot
+645|Leaden Tail
+646|Thick Leek
+647|Galarica Cuff
+648|Galarica Wreath
+649|Strawberry Sweet
+650|Love Sweet
+651|Flower Sweet
+652|Star Sweet
+653|Clover Sweet
+654|Berry Sweet
+655|Ribbon Sweet
+656|Rusted Shield
+657|Rusted Sword
+658|Dynamax Band
+659|Dynamax Crystal
+660|Dynamax Candy
+661|White Mane Hair
+662|Black Mane Hair
+663|Shiny Petal
+664|Reins of Unity
+665|Wishing Star
+666|Fossilized Fish
+667|Fossilized Drake
+668|Fossilized Bird
+669|Fossilized Dino
+670|Peat Block
+671|Black Ore
+672|Raichunite Star
+673|Eeveeite
+674|Star Drone
+675|Exp. Charm
+676|Pure Charm
+677|Level Stone
+678|Pre-Evolution Stone
+679|Coin Pouch
+680|Heavy-Duty Boots
+681|Sweet Heart
+682|Rock Candy
+683|Exp. Candy XS
+684|Exp. Candy S
+685|Exp. Candy M
+686|Exp. Candy L
+687|Exp. Candy XL
+688|Metronome
+689|Auspicious Armor
+690|Cursed Armor
+691|Syrupy Apple
+692|Exquisite Bowl
+693|Metal Alloy
+694|Teal Mask
+695|Cornerstone Mask
+696|Wellspring Mask
+697|Hearthflame Mask
+698|Health Mochi
+699|Muscle Mochi
+700|Resist Mochi
+701|Genius Mochi
+702|Clever Mochi
+703|Swift Mochi
+704|Fresh-Start Mochi
+705|Normal Tera Shard
+706|Fire Tera Shard
+707|Water Tera Shard
+708|Grass Tera Shard
+709|Electric Tera Shard
+710|Rock Tera Shard
+711|Fighting Tera Shard
+712|Ground Tera Shard
+713|Psychic Tera Shard
+714|Poison Tera Shard
+715|Bug Tera Shard
+716|Ice Tera Shard
+717|Dark Tera Shard
+718|Steel Tera Shard
+719|Flying Tera Shard
+720|Ghost Tera Shard
+721|Dragon Tera Shard
+722|Fairy Tera Shard
+723|Stellar Tera Shard
+724|Cologne
+725|Super Cologne
+726|Max Cologne
+727|Mirror Herb
+728|Covert Cloak
+729|Punching Glove
+730|Super Plugs
+731|Throat Spray
+732|Loaded Dice
+733|Safety Goggles
+734|Offense Tablet
+735|Defense Tablet
+736|Multi Tablet
+737|Critical Tablet
+738|Evasion Tablet
+739|Nervous Orb
+740|Legend Plate
+741|Chilan Berry
+742|Occa Berry
+743|Passho Berry
+744|Wacan Berry
+745|Rindo Berry
+746|Yache Berry
+747|Chople Berry
+748|Acardo Berry
+749|Payapa Berry
+750|Kebia Berry
+751|Yecana Berry
+752|Rimoya Berry
+753|Dillo Berry
+754|Babiri Berry
+755|Kouba Berry
+756|Drasi Berry
+757|Anjiro Berry
+758|Hibis Berry
+759|Lagro Berry
+760|Chiri Berry
+761|Jaboca Berry
+762|Rowap Berry
+763|Maranga Berry
+764|Kee Berry
+765|Lupu Berry
+766|Lax Incense
+767|Rock Incense
+768|Wave Incense
+769|Rose Incense
+770|Sea Incense
+771|Full Incense
+772|Luck Incense
+773|Odd Incense
+774|Pure Incense
+775|Scyclawite
+776|Cryogelixite
+777|Starmite
+778|Clefablite
+779|Victreebelite
+780|Dragonitite
+781|Meganiumite
+782|Feraligatrite
+783|Skarmorite
+784|Froslassite
+785|Emboarite
+786|Excadrillite
+787|Scolipedite
+788|Scraftite
+789|Eelektrossite
+790|Chandelurite
+791|Chesnaughtite
+792|Delphoxite
+793|Greninjanite
+794|Pyroarite
+795|Floettite
+796|Malamarite
+797|Barbaraclite
+798|Dragalgite
+799|Hawluchanite
+800|Zygardite
+801|Drampanite
+802|Falinksite
+803|Raichite X
+804|Raichite Y
+805|Baxcaliburite
+806|Chimechite
+807|Absolite Z
+808|Garchompite Z
+809|Staraptorite
+810|Lucarite Z
+811|Heatranite
+812|Darkrainite
+813|Golurkite
+814|Meowsticite
+815|Crabominablite
+816|Golisopodite
+817|Magearnite
+818|Zeraoranite
+819|Scovillainite
+820|Glimmoranite
+821|Tatsugirite

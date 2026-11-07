@@ -754,5 +754,8 @@
   "Importado en {}: {} archivos. Se creó un respaldo del perfil anterior.": "Imported into {}: {} files. A backup of the previous profile was created.",
   "{}\n\n--- de antes de reiniciar ---\n{}": "{}\n\n--- from before the restart ---\n{}",
   "install: recuperada una extraccion completa de game.staging": "install: recovered a complete extraction from game.staging",
-  "install: restaurado el juego anterior desde game.old": "install: previous game restored from game.old"
+  "install: restaurado el juego anterior desde game.old": "install: previous game restored from game.old",
+  "PS": "HP",
+  "At. Esp.": "Sp. Atk",
+  "Def. Esp.": "Sp. Def"
 }
